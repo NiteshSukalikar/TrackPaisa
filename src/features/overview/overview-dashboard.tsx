@@ -85,7 +85,7 @@ export function OverviewDashboard() {
   if (error) {
     return (
       <section className="grid gap-4">
-        <div role="alert" className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+        <div role="alert" className="rounded-lg border border-[var(--danger-border)] bg-[var(--danger-bg)] p-4 text-sm text-[var(--danger)]">
           {error}
         </div>
         <EmptyOverview />
@@ -241,7 +241,7 @@ export function OverviewDashboard() {
               <li key={usage.budget.id} className="grid gap-2 rounded-lg border border-[var(--border)] bg-[var(--bg)] p-4">
                 <div className="flex items-center justify-between gap-3 text-sm">
                   <span className="font-bold">{usage.categoryName}</span>
-                  <span className={usage.isOverLimit ? "font-bold text-red-700" : "text-[var(--muted)]"}>
+                  <span className={usage.isOverLimit ? "font-bold text-[var(--danger)]" : "text-[var(--muted)]"}>
                     {usage.percentUsed}%
                   </span>
                 </div>

@@ -9,6 +9,7 @@ import {
   Upload,
 } from "lucide-react";
 import Image from "next/image";
+import React from "react";
 import type { ReactNode } from "react";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 
@@ -52,7 +53,7 @@ export function AppShell({
   title = "Foundation and app shell",
 }: AppShellProps) {
   return (
-    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
+    <div className="min-h-screen text-[var(--text)]">
       <aside className="fixed inset-y-0 left-0 hidden w-72 border-r border-[var(--border)] bg-[var(--surface)] px-5 py-6 lg:block">
         <div className="mb-8 flex items-center gap-3">
           <Image
@@ -94,7 +95,7 @@ export function AppShell({
         </div>
       </aside>
 
-      <main className="pb-24 lg:ml-72 lg:pb-0">
+      <main className="pb-[calc(6rem+env(safe-area-inset-bottom))] lg:ml-72 lg:pb-0">
         <header className="sticky top-0 z-10 border-b border-[var(--border)] bg-[var(--bg)]/95 px-4 py-4 backdrop-blur md:px-8">
           <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
             <div className="flex items-center gap-3 lg:hidden">
@@ -121,7 +122,7 @@ export function AppShell({
 
       <nav
         aria-label="Mobile navigation"
-        className="fixed inset-x-3 bottom-3 z-20 grid grid-cols-5 gap-1 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-2 shadow-soft lg:hidden"
+        className="fixed inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-20 grid grid-cols-5 gap-1 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-2 shadow-soft lg:hidden"
       >
         {mobileItems.map((item) => (
           <a

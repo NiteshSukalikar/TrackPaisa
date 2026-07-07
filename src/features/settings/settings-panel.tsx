@@ -11,12 +11,14 @@ import {
   Wifi,
   WifiOff,
 } from "lucide-react";
+import React from "react";
 import { useEffect, useState } from "react";
 import {
   applyColorTheme,
   applyThemeMode,
-  getStoredColorTheme,
-  getStoredThemeMode,
+  appearanceChangeEvent,
+  getAppliedColorTheme,
+  getAppliedThemeMode,
   saveColorTheme,
   saveThemeMode,
   type ColorTheme,
@@ -31,17 +33,21 @@ export function SettingsPanel() {
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isOnline, setIsOnline] = useState(true);
   const [isInstalled, setIsInstalled] = useState(false);
-  const [themeMode, setThemeMode] = useState<ThemeMode>("light");
-  const [colorTheme, setColorTheme] = useState<ColorTheme>("green-blue");
+  const [themeMode, setThemeMode] = useState<ThemeMode>(() => getAppliedThemeMode());
+  const [colorTheme, setColorTheme] = useState<ColorTheme>(() => getAppliedColorTheme());
 
   useEffect(() => {
-    const storedThemeMode = getStoredThemeMode();
-    const storedColorTheme = getStoredColorTheme();
+    function syncAppearance() {
+      const storedThemeMode = getAppliedThemeMode();
+      const storedColorTheme = getAppliedColorTheme();
 
-    setThemeMode(storedThemeMode);
-    setColorTheme(storedColorTheme);
-    applyThemeMode(storedThemeMode);
-    applyColorTheme(storedColorTheme);
+      setThemeMode(storedThemeMode);
+      setColorTheme(storedColorTheme);
+      applyThemeMode(storedThemeMode);
+      applyColorTheme(storedColorTheme);
+    }
+
+    syncAppearance();
 
     setIsOnline(window.navigator.onLine);
     setIsInstalled(window.matchMedia("(display-mode: standalone)").matches);
@@ -62,11 +68,13 @@ export function SettingsPanel() {
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
+    window.addEventListener(appearanceChangeEvent, syncAppearance);
 
     return () => {
       window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
+      window.removeEventListener(appearanceChangeEvent, syncAppearance);
     };
   }, []);
 

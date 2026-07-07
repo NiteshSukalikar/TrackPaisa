@@ -232,7 +232,7 @@ export function CategoryManager() {
       </form>
 
       {error ? (
-        <div role="alert" className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+        <div role="alert" className="rounded-lg border border-[var(--danger-border)] bg-[var(--danger-bg)] p-4 text-sm text-[var(--danger)]">
           {error}
         </div>
       ) : null}
@@ -240,7 +240,7 @@ export function CategoryManager() {
       {message ? (
         <div
           role="status"
-          className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 p-4 text-sm font-semibold text-green-800"
+          className="flex items-center gap-2 rounded-lg border border-[var(--success-border)] bg-[var(--success-bg)] p-4 text-sm font-semibold text-[var(--success)]"
         >
           <CheckCircle2 aria-hidden="true" size={18} />
           {message}
@@ -410,7 +410,7 @@ function CategoryRow({
             type="button"
             onClick={() => onDelete(category)}
             disabled={pendingActionId === `delete-${category.id}` || usageCount > 0}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-red-200 text-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--danger-border)] text-[var(--danger)] disabled:cursor-not-allowed disabled:opacity-50"
             aria-label={`Delete ${category.name} category`}
             title={usageCount > 0 ? "Used categories cannot be deleted" : "Delete category"}
           >

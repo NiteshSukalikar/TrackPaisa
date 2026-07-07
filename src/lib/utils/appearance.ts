@@ -16,6 +16,7 @@ export function getColorThemeLabel(colorTheme: ColorTheme) {
 export function applyThemeMode(theme: ThemeMode) {
   document.documentElement.dataset.theme = theme;
   document.documentElement.classList.toggle("dark", theme === "dark");
+  document.documentElement.style.colorScheme = theme;
 }
 
 export function applyColorTheme(colorTheme: ColorTheme) {
@@ -30,6 +31,34 @@ export function getStoredColorTheme(): ColorTheme {
   return window.localStorage.getItem(colorThemeStorageKey) === "colorful"
     ? "colorful"
     : "green-blue";
+}
+
+export function getAppliedThemeMode(): ThemeMode {
+  if (typeof document !== "undefined") {
+    const rootTheme = document.documentElement.dataset.theme;
+
+    if (rootTheme === "dark" || rootTheme === "light") {
+      return rootTheme;
+    }
+  }
+
+  return typeof window !== "undefined" ? getStoredThemeMode() : "light";
+}
+
+export function getAppliedColorTheme(): ColorTheme {
+  if (typeof document !== "undefined") {
+    const rootPalette = document.documentElement.dataset.palette;
+
+    if (rootPalette === "colorful") {
+      return "colorful";
+    }
+
+    if (rootPalette === "green") {
+      return "green-blue";
+    }
+  }
+
+  return typeof window !== "undefined" ? getStoredColorTheme() : "green-blue";
 }
 
 export function saveThemeMode(theme: ThemeMode) {

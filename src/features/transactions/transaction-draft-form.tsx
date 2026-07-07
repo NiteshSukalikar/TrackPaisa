@@ -218,7 +218,7 @@ export function TransactionDraftForm({ initialType = "expense" }: TransactionDra
       </label>
 
       {errors.length > 0 ? (
-        <div role="alert" className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+        <div role="alert" className="rounded-lg border border-[var(--danger-border)] bg-[var(--danger-bg)] p-4 text-sm text-[var(--danger)]">
           <p className="font-bold">Fix these fields</p>
           <ul className="mt-2 grid gap-1">
             {errors.map((error) => (
@@ -231,7 +231,7 @@ export function TransactionDraftForm({ initialType = "expense" }: TransactionDra
       {savedMessage ? (
         <div
           role="status"
-          className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 p-4 text-sm font-semibold text-green-800"
+          className="flex items-center gap-2 rounded-lg border border-[var(--success-border)] bg-[var(--success-bg)] p-4 text-sm font-semibold text-[var(--success)]"
         >
           <CheckCircle2 aria-hidden="true" size={18} />
           {savedMessage}

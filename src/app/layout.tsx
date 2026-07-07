@@ -21,6 +21,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  viewportFit: "cover",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#F8FAFC" },
     { media: "(prefers-color-scheme: dark)", color: "#0B1220" },
@@ -34,6 +35,28 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function () {
+                try {
+                  var theme = window.localStorage.getItem("trackpaisa-theme") === "dark" ? "dark" : "light";
+                  var palette = window.localStorage.getItem("trackpaisa-color-theme") === "colorful" ? "colorful" : "green";
+                  document.documentElement.dataset.theme = theme;
+                  document.documentElement.dataset.palette = palette;
+                  document.documentElement.classList.toggle("dark", theme === "dark");
+                  document.documentElement.style.colorScheme = theme;
+                } catch (error) {
+                  document.documentElement.dataset.theme = "light";
+                  document.documentElement.dataset.palette = "green";
+                  document.documentElement.style.colorScheme = "light";
+                }
+              })();
+            `,
+          }}
+        />
+      </head>
       <body className="font-sans antialiased">
         <PwaRegistration />
         {children}

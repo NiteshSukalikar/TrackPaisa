@@ -158,7 +158,7 @@ export function ReportsDashboard() {
       </form>
 
       {error ? (
-        <div role="alert" className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+        <div role="alert" className="rounded-lg border border-[var(--danger-border)] bg-[var(--danger-bg)] p-4 text-sm text-[var(--danger)]">
           {error}
         </div>
       ) : null}

@@ -14,6 +14,12 @@
   --primary-strong: #14532d;
   --accent: #1d4ed8;
   --accent-soft: #38bdf8;
+  --danger: #b91c1c;
+  --danger-bg: #fef2f2;
+  --danger-border: #fecaca;
+  --success: #166534;
+  --success-bg: #f0fdf4;
+  --success-border: #bbf7d0;
 }
 
 [data-theme="dark"] {
@@ -28,6 +34,12 @@
   --primary-strong: #4ade80;
   --accent: #60a5fa;
   --accent-soft: #38bdf8;
+  --danger: #fca5a5;
+  --danger-bg: #3b1414;
+  --danger-border: #7f1d1d;
+  --success: #86efac;
+  --success-bg: #12351f;
+  --success-border: #166534;
 }
 
 [data-palette="colorful"] {
@@ -52,12 +64,17 @@
 
 html {
   min-height: 100%;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
   min-height: 100%;
   margin: 0;
-  background: var(--bg);
+  background:
+    radial-gradient(circle at top left, color-mix(in srgb, var(--primary) 14%, transparent), transparent 35%),
+    radial-gradient(circle at top right, color-mix(in srgb, var(--accent) 14%, transparent), transparent 32%),
+    var(--bg);
   color: var(--text);
 }
 
@@ -66,6 +83,46 @@ input,
 select,
 textarea {
   font: inherit;
+}
+
+button,
+input,
+select,
+textarea,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  min-width: 44px;
+  min-height: 44px;
+  touch-action: manipulation;
+}
+
+input:not([type="file"]),
+select,
+textarea {
+  max-width: 100%;
+  min-height: 44px;
+  border-radius: 0.5rem;
+  color: var(--text);
+  line-height: 1.4;
+}
+
+input,
+select,
+textarea {
+  accent-color: var(--primary);
+}
+
+textarea {
+  min-height: 96px;
+  resize: vertical;
+}
+
+::placeholder {
+  color: color-mix(in srgb, var(--muted) 78%, transparent);
+  opacity: 1;
 }
 
 :focus-visible {

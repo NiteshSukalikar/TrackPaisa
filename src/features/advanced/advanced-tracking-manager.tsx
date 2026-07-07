@@ -338,7 +338,10 @@ function Header({ icon: Icon, title }: { icon: LucideIcon; title: string }) {
 }
 
 function Alert({ children, icon: Icon, tone }: { children: string; icon: LucideIcon; tone: "error" | "success" }) {
-  const classes = tone === "error" ? "border-red-200 bg-red-50 text-red-800" : "border-green-200 bg-green-50 text-green-800";
+  const classes =
+    tone === "error"
+      ? "border-[var(--danger-border)] bg-[var(--danger-bg)] text-[var(--danger)]"
+      : "border-[var(--success-border)] bg-[var(--success-bg)] text-[var(--success)]";
 
   return (
     <div role={tone === "error" ? "alert" : "status"} className={`flex gap-2 rounded-lg border p-4 text-sm font-semibold ${classes}`}>
@@ -387,7 +390,7 @@ function SavedItem({
             <ActionIcon aria-hidden="true" size={16} />
           </button>
         ) : null}
-        <button type="button" onClick={onDelete} className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-red-200 text-red-700" aria-label={`Delete ${primary}`}>
+        <button type="button" onClick={onDelete} className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--danger-border)] text-[var(--danger)]" aria-label={`Delete ${primary}`}>
           <Trash2 aria-hidden="true" size={16} />
         </button>
       </div>

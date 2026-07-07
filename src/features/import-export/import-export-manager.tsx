@@ -136,7 +136,7 @@ export function ImportExportManager() {
       </div>
 
       {error ? (
-        <div role="alert" className="flex gap-2 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+        <div role="alert" className="flex gap-2 rounded-lg border border-[var(--danger-border)] bg-[var(--danger-bg)] p-4 text-sm text-[var(--danger)]">
           <XCircle aria-hidden="true" size={18} className="mt-0.5 shrink-0" />
           {error}
         </div>
@@ -145,7 +145,7 @@ export function ImportExportManager() {
       {message ? (
         <div
           role="status"
-          className="flex gap-2 rounded-lg border border-green-200 bg-green-50 p-4 text-sm font-semibold text-green-800"
+          className="flex gap-2 rounded-lg border border-[var(--success-border)] bg-[var(--success-bg)] p-4 text-sm font-semibold text-[var(--success)]"
         >
           <CheckCircle2 aria-hidden="true" size={18} className="mt-0.5 shrink-0" />
           {message}
@@ -225,7 +225,7 @@ export function ImportExportManager() {
           </div>
 
           {preview.invalidReasons.length > 0 ? (
-            <div role="alert" className="mt-5 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+            <div role="alert" className="mt-5 rounded-lg border border-[var(--danger-border)] bg-[var(--danger-bg)] p-4 text-sm text-[var(--danger)]">
               {preview.invalidReasons.join(" ")}
             </div>
           ) : (
@@ -250,7 +250,7 @@ export function ImportExportManager() {
                 type="button"
                 onClick={() => runImport("replace")}
                 disabled={isBusy}
-                className="inline-flex min-h-11 items-center justify-center rounded-lg border border-red-200 px-4 text-sm font-bold text-red-700 disabled:opacity-60"
+                className="inline-flex min-h-11 items-center justify-center rounded-lg border border-[var(--danger-border)] px-4 text-sm font-bold text-[var(--danger)] disabled:opacity-60"
               >
                 Replace all data
               </button>

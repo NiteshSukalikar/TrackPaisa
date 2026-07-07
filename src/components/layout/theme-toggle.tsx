@@ -1,24 +1,34 @@
 "use client";
 
-import { Moon, Sun } from "lucide-react";
+import { Moon, Palette, Sun } from "lucide-react";
+import React from "react";
 import { useEffect, useState } from "react";
 import {
   applyColorTheme,
+  applyThemeMode,
   appearanceChangeEvent,
-  getStoredColorTheme,
-  getStoredThemeMode,
+  getAppliedColorTheme,
+  getAppliedThemeMode,
+  getColorThemeLabel,
+  saveColorTheme,
   saveThemeMode,
+  type ColorTheme,
   type ThemeMode,
 } from "@/lib/utils/appearance";
 
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<ThemeMode>("light");
+  const [theme, setTheme] = useState<ThemeMode>(() => getAppliedThemeMode());
+  const [colorTheme, setColorTheme] = useState<ColorTheme>(() => getAppliedColorTheme());
 
   useEffect(() => {
     function syncTheme() {
-      const storedTheme = getStoredThemeMode();
+      const storedTheme = getAppliedThemeMode();
+      const storedColorTheme = getAppliedColorTheme();
+
       setTheme(storedTheme);
-      applyColorTheme(getStoredColorTheme());
+      setColorTheme(storedColorTheme);
+      applyThemeMode(storedTheme);
+      applyColorTheme(storedColorTheme);
     }
 
     syncTheme();
@@ -31,22 +41,52 @@ export function ThemeToggle() {
 
   function toggleTheme() {
     const nextTheme = theme === "dark" ? "light" : "dark";
+    setTheme(nextTheme);
     saveThemeMode(nextTheme);
   }
 
+  function togglePalette() {
+    const nextColorTheme = colorTheme === "colorful" ? "green-blue" : "colorful";
+    setColorTheme(nextColorTheme);
+    saveColorTheme(nextColorTheme);
+  }
+
   return (
-    <button
-      type="button"
-      onClick={toggleTheme}
-      aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
-      className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 text-sm font-bold text-[var(--text)]"
-    >
-      {theme === "dark" ? (
-        <Sun aria-hidden="true" size={18} />
-      ) : (
-        <Moon aria-hidden="true" size={18} />
-      )}
-      <span className="hidden sm:inline">{theme === "dark" ? "Light" : "Dark"}</span>
-    </button>
+    <div className="flex flex-wrap items-center justify-end gap-2">
+      <button
+        type="button"
+        onClick={toggleTheme}
+        aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+        className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 text-sm font-bold text-[var(--text)]"
+      >
+        {theme === "dark" ? (
+          <Sun aria-hidden="true" size={18} />
+        ) : (
+          <Moon aria-hidden="true" size={18} />
+        )}
+        <span className="hidden sm:inline">Light / Dark</span>
+      </button>
+
+      <button
+        type="button"
+        onClick={togglePalette}
+        aria-label={`Switch to ${colorTheme === "colorful" ? "green-blue" : "colorful"} theme`}
+        title={getColorThemeLabel(colorTheme)}
+        className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 text-sm font-bold text-[var(--text)]"
+      >
+        <Palette aria-hidden="true" size={18} />
+        <span className="hidden sm:inline">Theme</span>
+        <span
+          aria-hidden="true"
+          className="h-4 w-4 rounded-full border border-[var(--border)]"
+          style={{
+            background:
+              colorTheme === "colorful"
+                ? "linear-gradient(135deg, #8b5cf6, #10b981, #f59e0b)"
+                : "linear-gradient(135deg, #166534, #1d4ed8)",
+          }}
+        />
+      </button>
+    </div>
   );
 }

@@ -364,13 +364,13 @@ export function TransactionList() {
       </form>
 
       {error ? (
-        <div role="alert" className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+        <div role="alert" className="rounded-lg border border-[var(--danger-border)] bg-[var(--danger-bg)] p-4 text-sm text-[var(--danger)]">
           {error}
         </div>
       ) : null}
 
       {actionError ? (
-        <div role="alert" className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+        <div role="alert" className="rounded-lg border border-[var(--danger-border)] bg-[var(--danger-bg)] p-4 text-sm text-[var(--danger)]">
           {actionError}
         </div>
       ) : null}
@@ -378,7 +378,7 @@ export function TransactionList() {
       {actionMessage ? (
         <div
           role="status"
-          className="rounded-lg border border-green-200 bg-green-50 p-4 text-sm font-semibold text-green-800"
+          className="rounded-lg border border-[var(--success-border)] bg-[var(--success-bg)] p-4 text-sm font-semibold text-[var(--success)]"
         >
           {actionMessage}
         </div>
@@ -534,7 +534,7 @@ function TransactionRow({
           type="button"
           onClick={() => onDelete(transaction)}
           disabled={pendingActionId === `delete-${transaction.id}`}
-          className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-red-200 text-red-700 disabled:opacity-60"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--danger-border)] text-[var(--danger)] disabled:opacity-60"
           aria-label={`Delete ${transaction.note ?? category?.name ?? "transaction"} transaction`}
         >
           <Trash2 aria-hidden="true" size={17} />
