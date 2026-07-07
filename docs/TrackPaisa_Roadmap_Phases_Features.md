@@ -15,7 +15,7 @@ Core principle: build a fast, private, local-first money journal before building
 | Design system | Completed | Completed | Phase 0 tokens, shell, light/dark mode, layout, and Phase 1 form/list patterns are implemented. |
 | Engineering foundation | Completed | Completed | Next.js, TypeScript, Tailwind, IndexedDB schema, and Vitest checks are in place. |
 | MVP tracking workflow | Completed | Completed | Phase 1 add, list, search/filter, edit, delete, dashboard summary, and categories management workflows are implemented. |
-| Reports and analytics | Incomplete | Incomplete | Needed for product value, but should follow stable data entry. |
+| Reports and analytics | Completed | Completed | Phase 2 period summaries, category breakdowns, comparisons, and monthly trend views are implemented. |
 | Import/export | Incomplete | Incomplete | Critical for local-first portability. |
 | PWA/offline | Incomplete | Incomplete | Needed after core flows are stable. |
 | AI layer | Incomplete | Incomplete | Future optional layer only. |
@@ -30,7 +30,7 @@ Core principle: build a fast, private, local-first money journal before building
 | Add transaction | 1 | Completed | Completed | P0 |
 | Transactions list | 1 | Completed | Completed | P0 |
 | Categories | 1 | Completed | Completed | P0 |
-| Reports | 2 | Not Started | Not Started | P1 |
+| Reports | 2 | Completed | Completed | P1 |
 | Import / Export | 3 | Not Started | Not Started | P1 |
 | Settings | 0-3 | In Progress | In Progress | P1 |
 | PWA install/offline page | 4 | Incomplete | Incomplete | P2 |
@@ -146,9 +146,9 @@ Allow users to manually track income and expenses quickly and reliably.
 
 ### Status
 
-Build Status: Incomplete
+Build Status: Completed
 
-QA Status: Incomplete
+QA Status: Completed
 
 ### Goal
 
@@ -433,8 +433,8 @@ Prepare TrackPaisa for public release with legal, quality, accessibility, and de
 - [x] Delete transaction - Status: Completed
 - [x] Dashboard summary - Status: Completed
 - [x] Category management - Status: Completed
-- [ ] Category report - Status: Incomplete
-- [ ] Monthly report - Status: Incomplete
+- [x] Category report - Status: Completed
+- [x] Monthly report - Status: Completed
 - [ ] JSON export - Status: Incomplete
 - [ ] JSON import - Status: Incomplete
 - [x] Responsive mobile layout - Status: Completed
@@ -484,7 +484,7 @@ Status: In Progress
 - [x] Tablet layout works.
 - [x] Desktop layout works.
 - [x] Text does not overflow.
-- [ ] Charts remain readable.
+- [x] Charts remain readable.
 
 ### Gate 3 - Accessibility
 
@@ -492,7 +492,7 @@ Status: In Progress
 
 - [x] Keyboard navigation works.
 - [x] Color contrast is acceptable.
-- [ ] Charts include labels/summaries.
+- [x] Charts include labels/summaries.
 - [x] Buttons and inputs have accessible names.
 - [x] Income/expense are not identified by color only.
 
