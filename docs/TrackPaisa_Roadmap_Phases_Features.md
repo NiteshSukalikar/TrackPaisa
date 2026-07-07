@@ -18,6 +18,7 @@ Core principle: build a fast, private, local-first money journal before building
 | Reports and analytics | Completed | Completed | Phase 2 period summaries, category breakdowns, comparisons, and monthly trend views are implemented. |
 | Import/export | Completed | Completed | Phase 3 JSON backup, restore preview, duplicate handling, and safety backup are implemented; CSV remains a V2 enhancement. |
 | PWA/offline | Completed | Completed | Phase 4 install metadata, offline shell, service worker, and update prompt are implemented. |
+| Advanced tracking | Completed | Completed | Phase 5 recurring templates, tags, wallet/source filtering, budget limits, clone, and quick-add support are implemented. |
 | AI layer | Incomplete | Incomplete | Future optional layer only. |
 | Cloud sync | Incomplete | Incomplete | Future optional layer only after local app is stable. |
 
@@ -34,7 +35,7 @@ Core principle: build a fast, private, local-first money journal before building
 | Import / Export | 3 | Completed | Completed | P1 |
 | Settings | 0-4 | Completed | Completed | P1 | Includes light/dark mode, green-blue/colorful theme selection, and PWA status controls. |
 | PWA install/offline page | 4 | Completed | Completed | P2 |
-| Advanced tracking | 5 | Incomplete | Incomplete | P2 |
+| Advanced tracking | 5 | Completed | Completed | P2 |
 | AI assistant/insights | 6 | Incomplete | Incomplete | P3 |
 | Optional cloud sync | 7 | Incomplete | Incomplete | P4 |
 | Launch readiness / legal review | 8 | Incomplete | Incomplete | P0 before public launch |
@@ -255,9 +256,9 @@ Make TrackPaisa feel like a mobile app while preserving local-first behavior.
 
 ### Status
 
-Build Status: Incomplete
+Build Status: Completed
 
-QA Status: Incomplete
+QA Status: Completed
 
 ### Goal
 
@@ -270,7 +271,7 @@ Make tracking more powerful without adding clutter.
 - Tags
 - Wallet/source tracking enhancements
 - Budget limits per category
-- Monthly savings goal
+- Monthly savings goal, optional future
 - Transaction clone
 - Quick add shortcuts
 - Merchant/payee field, optional
@@ -279,8 +280,10 @@ Make tracking more powerful without adding clutter.
 ### Acceptance Criteria
 
 - User can create repeating salary/income templates.
+- User can create repeating expense templates.
 - User can set simple category limits.
 - User can filter using tags and wallet/source.
+- User can clone an existing transaction for quick repeat entry.
 - Advanced fields do not slow down normal quick entry.
 - Budget warnings are understandable and not intrusive.
 
@@ -453,10 +456,10 @@ Prepare TrackPaisa for public release with legal, quality, accessibility, and de
 - [ ] Duplicate handling - Status: Incomplete
 - [x] PWA install - Status: Completed
 - [x] Offline shell - Status: Completed
-- [ ] Recurring templates - Status: Incomplete
-- [ ] Tags - Status: Incomplete
-- [ ] Wallet/source tracking enhancements - Status: Incomplete
-- [ ] Budget limits - Status: Incomplete
+- [x] Recurring templates - Status: Completed
+- [x] Tags - Status: Completed
+- [x] Wallet/source tracking enhancements - Status: Completed
+- [x] Budget limits - Status: Completed
 
 ## V3 Feature Checklist
 

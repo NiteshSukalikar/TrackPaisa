@@ -1,11 +1,20 @@
 import { defaultSettings } from "@/lib/constants/default-settings";
-import type { AppSettings, Category, Transaction, Wallet } from "@/lib/types/finance";
+import type {
+  AppSettings,
+  BudgetLimit,
+  Category,
+  RecurringTemplate,
+  Transaction,
+  Wallet,
+} from "@/lib/types/finance";
 
 export const backupFormat = "trackpaisa-backup";
 export const backupVersion = 1;
 
 export interface TrackPaisaBackupData {
+  budgetLimits?: BudgetLimit[];
   categories: Category[];
+  recurringTemplates?: RecurringTemplate[];
   settings: AppSettings;
   transactions: Transaction[];
   wallets: Wallet[];
@@ -22,11 +31,15 @@ export interface TrackPaisaBackup {
 export interface BackupPreview {
   backup: TrackPaisaBackup;
   duplicateCategoryIds: string[];
+  duplicateBudgetLimitIds: string[];
+  duplicateRecurringTemplateIds: string[];
   duplicateTransactionIds: string[];
   duplicateWalletIds: string[];
   invalidReasons: string[];
   summary: {
     categories: number;
+    budgetLimits: number;
+    recurringTemplates: number;
     transactions: number;
     wallets: number;
   };
@@ -42,6 +55,8 @@ export function createBackup(data: TrackPaisaBackupData, exportedAt = new Date()
     version: backupVersion,
     data: {
       categories: [...data.categories],
+      budgetLimits: [...(data.budgetLimits ?? [])],
+      recurringTemplates: [...(data.recurringTemplates ?? [])],
       settings: { ...defaultSettings, ...data.settings },
       transactions: [...data.transactions],
       wallets: [...data.wallets],
@@ -70,16 +85,25 @@ export function parseBackupJson(value: string): TrackPaisaBackup {
 export function createBackupPreview(
   backup: TrackPaisaBackup,
   existing: Pick<TrackPaisaBackupData, "categories" | "transactions" | "wallets">,
+  extraExisting: Partial<Pick<TrackPaisaBackupData, "budgetLimits" | "recurringTemplates">> = {},
 ): BackupPreview {
   const existingCategoryIds = new Set(existing.categories.map((category) => category.id));
   const existingTransactionIds = new Set(existing.transactions.map((transaction) => transaction.id));
   const existingWalletIds = new Set(existing.wallets.map((wallet) => wallet.id));
+  const existingBudgetLimitIds = new Set((extraExisting.budgetLimits ?? []).map((budget) => budget.id));
+  const existingRecurringTemplateIds = new Set((extraExisting.recurringTemplates ?? []).map((template) => template.id));
 
   return {
     backup,
+    duplicateBudgetLimitIds: (backup.data.budgetLimits ?? [])
+      .filter((budget) => existingBudgetLimitIds.has(budget.id))
+      .map((budget) => budget.id),
     duplicateCategoryIds: backup.data.categories
       .filter((category) => existingCategoryIds.has(category.id))
       .map((category) => category.id),
+    duplicateRecurringTemplateIds: (backup.data.recurringTemplates ?? [])
+      .filter((template) => existingRecurringTemplateIds.has(template.id))
+      .map((template) => template.id),
     duplicateTransactionIds: backup.data.transactions
       .filter((transaction) => existingTransactionIds.has(transaction.id))
       .map((transaction) => transaction.id),
@@ -88,7 +112,9 @@ export function createBackupPreview(
       .map((wallet) => wallet.id),
     invalidReasons: validateBackup(backup),
     summary: {
+      budgetLimits: (backup.data.budgetLimits ?? []).length,
       categories: backup.data.categories.length,
+      recurringTemplates: (backup.data.recurringTemplates ?? []).length,
       transactions: backup.data.transactions.length,
       wallets: backup.data.wallets.length,
     },
@@ -99,17 +125,26 @@ export function mergeBackupData(
   backup: TrackPaisaBackup,
   existing: Pick<TrackPaisaBackupData, "categories" | "transactions" | "wallets">,
   mode: ImportMode,
+  extraExisting: Partial<Pick<TrackPaisaBackupData, "budgetLimits" | "recurringTemplates">> = {},
 ) {
   if (mode === "replace") {
     return {
+      budgetLimits: backup.data.budgetLimits ?? [],
       categories: backup.data.categories,
+      recurringTemplates: backup.data.recurringTemplates ?? [],
       transactions: backup.data.transactions,
       wallets: backup.data.wallets,
     };
   }
 
   return {
+    budgetLimits: mergeById(extraExisting.budgetLimits ?? [], backup.data.budgetLimits ?? [], mode),
     categories: mergeById(existing.categories, backup.data.categories, mode),
+    recurringTemplates: mergeById(
+      extraExisting.recurringTemplates ?? [],
+      backup.data.recurringTemplates ?? [],
+      mode,
+    ),
     transactions: mergeById(existing.transactions, backup.data.transactions, mode),
     wallets: mergeById(existing.wallets, backup.data.wallets, mode),
   };
@@ -151,6 +186,22 @@ function validateBackup(value: unknown) {
     reasons.push("Backup transactions are missing.");
   } else {
     reasons.push(...value.data.transactions.flatMap(validateTransaction));
+  }
+
+  if (value.data.budgetLimits !== undefined) {
+    if (!Array.isArray(value.data.budgetLimits)) {
+      reasons.push("Backup budget limits are invalid.");
+    } else {
+      reasons.push(...value.data.budgetLimits.flatMap(validateBudgetLimit));
+    }
+  }
+
+  if (value.data.recurringTemplates !== undefined) {
+    if (!Array.isArray(value.data.recurringTemplates)) {
+      reasons.push("Backup recurring templates are invalid.");
+    } else {
+      reasons.push(...value.data.recurringTemplates.flatMap(validateRecurringTemplate));
+    }
   }
 
   if (!Array.isArray(value.data.categories)) {
@@ -227,6 +278,50 @@ function validateWallet(value: unknown) {
 
   if (!["cash", "bank", "upi", "other"].includes(String(value.type))) {
     reasons.push("A wallet has an invalid type.");
+  }
+
+  return reasons;
+}
+
+function validateBudgetLimit(value: unknown) {
+  if (!isRecord(value)) {
+    return ["A budget limit has an unsupported shape."];
+  }
+
+  const reasons = requireStringFields(value, ["id", "categoryId", "monthKey", "createdAt", "updatedAt"], "budget limit");
+
+  if (typeof value.amount !== "number" || !Number.isFinite(value.amount) || value.amount <= 0) {
+    reasons.push("A budget limit has an invalid amount.");
+  }
+
+  if (typeof value.monthKey === "string" && !/^\d{4}-\d{2}$/.test(value.monthKey)) {
+    reasons.push("A budget limit has an invalid month.");
+  }
+
+  return reasons;
+}
+
+function validateRecurringTemplate(value: unknown) {
+  if (!isRecord(value)) {
+    return ["A recurring template has an unsupported shape."];
+  }
+
+  const reasons = requireStringFields(value, ["id", "categoryId", "nextDate", "createdAt", "updatedAt"], "recurring template");
+
+  if (value.type !== "income" && value.type !== "expense") {
+    reasons.push("A recurring template has an invalid type.");
+  }
+
+  if (value.frequency !== "weekly" && value.frequency !== "monthly") {
+    reasons.push("A recurring template has an invalid frequency.");
+  }
+
+  if (typeof value.amount !== "number" || !Number.isFinite(value.amount) || value.amount <= 0) {
+    reasons.push("A recurring template has an invalid amount.");
+  }
+
+  if (typeof value.isActive !== "boolean") {
+    reasons.push("A recurring template has an invalid active flag.");
   }
 
   return reasons;

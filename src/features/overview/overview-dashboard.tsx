@@ -3,15 +3,17 @@
 import { ArrowDownLeft, ArrowUpRight, CalendarDays, ListChecks, PiggyBank, Wallet } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { EmptyOverview } from "@/features/overview/empty-overview";
+import { listBudgetLimits } from "@/lib/db/repositories/advanced-tracking-repository";
 import { listCategories, seedDefaultCategories } from "@/lib/db/repositories/categories-repository";
 import { listTransactions } from "@/lib/db/repositories/transactions-repository";
-import type { Category, Transaction } from "@/lib/types/finance";
+import type { BudgetLimit, Category, Transaction } from "@/lib/types/finance";
 import { formatInr } from "@/lib/utils/currency";
-import { summarizeMonthlyDashboard } from "@/lib/utils/transactions";
+import { summarizeBudgetUsage, summarizeMonthlyDashboard } from "@/lib/utils/transactions";
 
 export function OverviewDashboard() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [budgets, setBudgets] = useState<BudgetLimit[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -25,14 +27,16 @@ export function OverviewDashboard() {
       try {
         await seedDefaultCategories();
 
-        const [nextCategories, nextTransactions] = await Promise.all([
+        const [nextCategories, nextTransactions, nextBudgets] = await Promise.all([
           listCategories(),
           listTransactions(),
+          listBudgetLimits(),
         ]);
 
         if (isMounted) {
           setCategories(nextCategories);
           setTransactions(nextTransactions);
+          setBudgets(nextBudgets);
         }
       } catch {
         if (isMounted) {
@@ -59,6 +63,10 @@ export function OverviewDashboard() {
   const dashboard = useMemo(
     () => summarizeMonthlyDashboard(transactions, categories),
     [transactions, categories],
+  );
+  const budgetUsage = useMemo(
+    () => summarizeBudgetUsage(transactions, categories, budgets, dashboard.monthKey),
+    [transactions, categories, budgets, dashboard.monthKey],
   );
   const monthLabel = formatMonthLabel(dashboard.monthKey);
 
@@ -219,6 +227,39 @@ export function OverviewDashboard() {
           </ul>
         </article>
       </section>
+
+      {budgetUsage.length > 0 ? (
+        <section className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5">
+          <div className="flex items-center justify-between gap-3">
+            <h3 className="text-lg font-bold">Budget watch</h3>
+            <a href="/advanced" className="text-sm font-bold text-[var(--primary)]">
+              Manage
+            </a>
+          </div>
+          <ul className="mt-4 grid gap-3 md:grid-cols-2">
+            {budgetUsage.slice(0, 4).map((usage) => (
+              <li key={usage.budget.id} className="grid gap-2 rounded-lg border border-[var(--border)] bg-[var(--bg)] p-4">
+                <div className="flex items-center justify-between gap-3 text-sm">
+                  <span className="font-bold">{usage.categoryName}</span>
+                  <span className={usage.isOverLimit ? "font-bold text-red-700" : "text-[var(--muted)]"}>
+                    {usage.percentUsed}%
+                  </span>
+                </div>
+                <div className="h-2 overflow-hidden rounded-lg bg-[var(--surface-muted)]">
+                  <div
+                    className="h-full rounded-lg bg-[var(--primary)]"
+                    style={{ width: `${Math.min(usage.percentUsed, 100)}%` }}
+                  />
+                </div>
+                <p className="text-sm text-[var(--muted)]">
+                  {formatInr(usage.spent)} of {formatInr(usage.budget.amount)}
+                  {usage.isOverLimit ? " spent, over limit" : ` spent, ${formatInr(usage.remaining)} left`}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
     </div>
   );
 }

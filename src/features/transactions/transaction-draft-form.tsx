@@ -4,9 +4,10 @@ import { ArrowDownLeft, ArrowUpRight, CheckCircle2 } from "lucide-react";
 import React from "react";
 import type { FormEvent, ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
+import { listWallets } from "@/lib/db/repositories/advanced-tracking-repository";
 import { listCategories, seedDefaultCategories } from "@/lib/db/repositories/categories-repository";
 import { addTransaction } from "@/lib/db/repositories/transactions-repository";
-import type { Category, TransactionType } from "@/lib/types/finance";
+import type { Category, TransactionType, Wallet } from "@/lib/types/finance";
 import { validateTransactionDraft } from "@/lib/utils/validation";
 
 interface TransactionDraftFormProps {
@@ -20,10 +21,12 @@ export function TransactionDraftForm({ initialType = "expense" }: TransactionDra
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [walletId, setWalletId] = useState("");
   const [note, setNote] = useState("");
+  const [tagsText, setTagsText] = useState("");
   const [errors, setErrors] = useState<string[]>([]);
   const [savedMessage, setSavedMessage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [wallets, setWallets] = useState<Wallet[]>([]);
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
 
   useEffect(() => {
@@ -34,10 +37,11 @@ export function TransactionDraftForm({ initialType = "expense" }: TransactionDra
 
       try {
         await seedDefaultCategories();
-        const nextCategories = await listCategories();
+        const [nextCategories, nextWallets] = await Promise.all([listCategories(), listWallets()]);
 
         if (isMounted) {
           setCategories(nextCategories);
+          setWallets(nextWallets);
         }
       } catch {
         if (isMounted) {
@@ -78,6 +82,7 @@ export function TransactionDraftForm({ initialType = "expense" }: TransactionDra
       date,
       walletId: walletId.trim() || undefined,
       note: note.trim() || undefined,
+      tags: parseTags(tagsText),
     };
     const result = validateTransactionDraft(draft);
 
@@ -97,6 +102,7 @@ export function TransactionDraftForm({ initialType = "expense" }: TransactionDra
       setCategoryId("");
       setWalletId("");
       setNote("");
+      setTagsText("");
       setSavedMessage(
         `${savedTransaction.type === "income" ? "Income" : "Expense"} saved on this device.`,
       );
@@ -178,11 +184,27 @@ export function TransactionDraftForm({ initialType = "expense" }: TransactionDra
           <input
             value={walletId}
             onChange={(event) => setWalletId(event.target.value)}
+            list="wallet-options"
             placeholder="Cash, Bank, UPI"
             className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none"
           />
+          <datalist id="wallet-options">
+            {wallets.map((wallet) => (
+              <option key={wallet.id} value={wallet.name} />
+            ))}
+          </datalist>
         </label>
       </div>
+
+      <label className="grid gap-2 text-sm font-bold">
+        Tags
+        <input
+          value={tagsText}
+          onChange={(event) => setTagsText(event.target.value)}
+          placeholder="monthly, work, fixed"
+          className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none"
+        />
+      </label>
 
       <label className="grid gap-2 text-sm font-bold">
         Note
@@ -246,4 +268,8 @@ function TypeButton({
       {children}
     </button>
   );
+}
+
+function parseTags(value: string) {
+  return [...new Set(value.split(",").map((tag) => tag.trim()).filter(Boolean))];
 }

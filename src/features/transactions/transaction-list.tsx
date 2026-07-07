@@ -3,6 +3,7 @@
 import {
   ArrowDownLeft,
   ArrowUpRight,
+  Copy,
   Pencil,
   Plus,
   Save,
@@ -12,13 +13,15 @@ import {
   X,
 } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
+import { listWallets } from "@/lib/db/repositories/advanced-tracking-repository";
 import { seedDefaultCategories, listCategories } from "@/lib/db/repositories/categories-repository";
 import {
+  cloneTransaction,
   deleteTransaction,
   listTransactions,
   updateTransaction,
 } from "@/lib/db/repositories/transactions-repository";
-import type { Category, Transaction, TransactionType } from "@/lib/types/finance";
+import type { Category, Transaction, TransactionType, Wallet } from "@/lib/types/finance";
 import { formatInr } from "@/lib/utils/currency";
 import type { TransactionDraft } from "@/lib/utils/validation";
 import { validateTransactionDraft } from "@/lib/utils/validation";
@@ -31,6 +34,8 @@ interface Filters {
   categoryId: string;
   dateFrom: string;
   dateTo: string;
+  tag: string;
+  walletId: string;
 }
 
 const initialFilters: Filters = {
@@ -39,6 +44,8 @@ const initialFilters: Filters = {
   categoryId: "",
   dateFrom: "",
   dateTo: "",
+  tag: "",
+  walletId: "",
 };
 
 interface EditDraft {
@@ -48,11 +55,13 @@ interface EditDraft {
   date: string;
   walletId: string;
   note: string;
+  tagsText: string;
 }
 
 export function TransactionList() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [wallets, setWallets] = useState<Wallet[]>([]);
   const [filters, setFilters] = useState<Filters>(initialFilters);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
@@ -73,19 +82,23 @@ export function TransactionList() {
       try {
         await seedDefaultCategories();
 
-        const [nextCategories, nextTransactions] = await Promise.all([
+        const [nextCategories, nextWallets, nextTransactions] = await Promise.all([
           listCategories(),
+          listWallets(),
           listTransactions({
             type: filters.type,
             categoryId: filters.categoryId || undefined,
             dateFrom: filters.dateFrom || undefined,
             dateTo: filters.dateTo || undefined,
             search: filters.search || undefined,
+            tag: filters.tag || undefined,
+            walletId: filters.walletId || undefined,
           }),
         ]);
 
         if (isMounted) {
           setCategories(nextCategories);
+          setWallets(nextWallets);
           setTransactions(nextTransactions);
         }
       } catch {
@@ -136,6 +149,7 @@ export function TransactionList() {
       date: transaction.date,
       walletId: transaction.walletId ?? "",
       note: transaction.note ?? "",
+      tagsText: transaction.tags?.join(", ") ?? "",
     });
     setActionError("");
     setActionMessage("");
@@ -159,6 +173,7 @@ export function TransactionList() {
       date: editDraft.date,
       walletId: editDraft.walletId.trim() || undefined,
       note: editDraft.note.trim() || undefined,
+      tags: parseTags(editDraft.tagsText),
     };
     const result = validateTransactionDraft(draft);
 
@@ -205,6 +220,22 @@ export function TransactionList() {
       refreshTransactions();
     } catch {
       setActionError("Transaction could not be deleted. Please try again.");
+    } finally {
+      setPendingActionId(null);
+    }
+  }
+
+  async function duplicateTransaction(transaction: Transaction) {
+    setPendingActionId(`clone-${transaction.id}`);
+    setActionError("");
+    setActionMessage("");
+
+    try {
+      await cloneTransaction(transaction.id);
+      setActionMessage("Transaction cloned for today.");
+      refreshTransactions();
+    } catch {
+      setActionError("Transaction could not be cloned. Please try again.");
     } finally {
       setPendingActionId(null);
     }
@@ -302,6 +333,34 @@ export function TransactionList() {
             />
           </label>
         </div>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <label className="grid gap-2 text-sm font-bold">
+            Wallet / Source
+            <select
+              value={filters.walletId}
+              onChange={(event) => updateFilter("walletId", event.target.value)}
+              className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none"
+            >
+              <option value="">All wallets</option>
+              {wallets.map((wallet) => (
+                <option key={wallet.id} value={wallet.name}>
+                  {wallet.name}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="grid gap-2 text-sm font-bold">
+            Tag
+            <input
+              value={filters.tag}
+              onChange={(event) => updateFilter("tag", event.target.value)}
+              placeholder="monthly"
+              className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none"
+            />
+          </label>
+        </div>
       </form>
 
       {error ? (
@@ -357,6 +416,7 @@ export function TransactionList() {
                 onCancelEdit={cancelEdit}
                 onDraftChange={setEditDraft}
                 onSaveEdit={saveEdit}
+                onClone={duplicateTransaction}
                 onDelete={removeTransaction}
               />
             ))}
@@ -378,6 +438,7 @@ function TransactionRow({
   onCancelEdit,
   onDraftChange,
   onSaveEdit,
+  onClone,
   onDelete,
 }: {
   transaction: Transaction;
@@ -390,6 +451,7 @@ function TransactionRow({
   onCancelEdit: () => void;
   onDraftChange: (draft: EditDraft) => void;
   onSaveEdit: (transactionId: string) => void;
+  onClone: (transaction: Transaction) => void;
   onDelete: (transaction: Transaction) => void;
 }) {
   const isIncome = transaction.type === "income";
@@ -433,6 +495,15 @@ function TransactionRow({
           {transaction.note ? (
             <p className="mt-2 break-words text-sm leading-6">{transaction.note}</p>
           ) : null}
+          {transaction.tags && transaction.tags.length > 0 ? (
+            <div className="mt-2 flex flex-wrap gap-1">
+              {transaction.tags.map((tag) => (
+                <span key={tag} className="rounded-lg border border-[var(--border)] px-2 py-1 text-xs font-bold text-[var(--muted)]">
+                  #{tag}
+                </span>
+              ))}
+            </div>
+          ) : null}
         </div>
       </div>
 
@@ -442,6 +513,15 @@ function TransactionRow({
           {isIncome ? "+" : "-"}
           {formatInr(transaction.amount)}
         </p>
+        <button
+          type="button"
+          onClick={() => onClone(transaction)}
+          disabled={pendingActionId === `clone-${transaction.id}`}
+          className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--border)] text-[var(--muted)]"
+          aria-label={`Clone ${transaction.note ?? category?.name ?? "transaction"} transaction`}
+        >
+          <Copy aria-hidden="true" size={17} />
+        </button>
         <button
           type="button"
           onClick={() => onStartEdit(transaction)}
@@ -535,6 +615,16 @@ function TransactionRow({
                 className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 text-base outline-none"
               />
             </label>
+
+            <label className="grid gap-2 text-sm font-bold">
+              Edit tags
+              <input
+                value={editDraft.tagsText}
+                onChange={(event) => updateDraft("tagsText", event.target.value)}
+                placeholder="monthly, work"
+                className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 text-base outline-none"
+              />
+            </label>
           </div>
 
           <div className="flex flex-wrap gap-2">
@@ -567,4 +657,8 @@ function formatTransactionDate(value: string) {
     month: "short",
     year: "numeric",
   }).format(new Date(`${value}T00:00:00`));
+}
+
+function parseTags(value: string) {
+  return [...new Set(value.split(",").map((tag) => tag.trim()).filter(Boolean))];
 }

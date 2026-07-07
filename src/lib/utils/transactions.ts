@@ -1,4 +1,4 @@
-import type { Category, Transaction } from "@/lib/types/finance";
+import type { BudgetLimit, Category, Transaction } from "@/lib/types/finance";
 
 export interface TransactionSummary {
   income: number;
@@ -20,6 +20,15 @@ export interface MonthlyDashboardSummary extends TransactionSummary {
   categorySpend: CategorySpendSummary[];
   topSpendingCategory?: CategorySpendSummary;
   recentTransactions: Transaction[];
+}
+
+export interface BudgetUsageSummary {
+  budget: BudgetLimit;
+  categoryName: string;
+  spent: number;
+  remaining: number;
+  percentUsed: number;
+  isOverLimit: boolean;
 }
 
 export function summarizeTransactions(transactions: Transaction[]): TransactionSummary {
@@ -109,6 +118,37 @@ export function isValidIsoDate(value: string) {
     date.getUTCMonth() === month - 1 &&
     date.getUTCDate() === day
   );
+}
+
+export function summarizeBudgetUsage(
+  transactions: Transaction[],
+  categories: Category[],
+  budgets: BudgetLimit[],
+  monthKey = getMonthKey(),
+): BudgetUsageSummary[] {
+  const categoryById = new Map(categories.map((category) => [category.id, category]));
+  const monthlyExpenses = transactions.filter(
+    (transaction) => transaction.type === "expense" && transaction.date.startsWith(monthKey),
+  );
+
+  return budgets
+    .filter((budget) => budget.monthKey === monthKey)
+    .map((budget) => {
+      const spent = monthlyExpenses
+        .filter((transaction) => transaction.categoryId === budget.categoryId)
+        .reduce((total, transaction) => total + transaction.amount, 0);
+      const percentUsed = budget.amount > 0 ? Math.round((spent / budget.amount) * 100) : 0;
+
+      return {
+        budget,
+        categoryName: categoryById.get(budget.categoryId)?.name ?? "Category",
+        spent,
+        remaining: budget.amount - spent,
+        percentUsed,
+        isOverLimit: spent > budget.amount,
+      };
+    })
+    .sort((first, second) => second.percentUsed - first.percentUsed);
 }
 
 function sortTransactionsNewestFirst(transactions: Transaction[]) {

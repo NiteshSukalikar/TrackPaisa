@@ -13,6 +13,30 @@ export interface Transaction {
   updatedAt: string;
 }
 
+export interface RecurringTemplate {
+  id: string;
+  type: TransactionType;
+  amount: number;
+  categoryId: string;
+  walletId?: string;
+  note?: string;
+  tags?: string[];
+  frequency: "weekly" | "monthly";
+  nextDate: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BudgetLimit {
+  id: string;
+  categoryId: string;
+  amount: number;
+  monthKey: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Category {
   id: string;
   name: string;

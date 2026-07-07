@@ -5,6 +5,7 @@ import {
   Plus,
   Settings,
   Tags,
+  WalletCards,
   Upload,
 } from "lucide-react";
 import Image from "next/image";
@@ -15,6 +16,7 @@ const desktopItems = [
   { label: "Overview", href: "/", icon: Home },
   { label: "Transactions", href: "/transactions", icon: ListChecks },
   { label: "Categories", href: "/categories", icon: Tags },
+  { label: "Advanced", href: "/advanced", icon: WalletCards },
   { label: "Reports", href: "/reports", icon: BarChart3 },
   { label: "Import / Export", href: "/import-export", icon: Upload },
   { label: "Settings", href: "/settings", icon: Settings },

@@ -7,6 +7,7 @@ export interface TransactionDraft {
   categoryId?: string;
   date?: string;
   note?: string;
+  tags?: string[];
   walletId?: string;
 }
 

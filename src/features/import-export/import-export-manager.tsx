@@ -25,6 +25,8 @@ export function ImportExportManager() {
 
     return (
       preview.duplicateCategoryIds.length +
+      preview.duplicateBudgetLimitIds.length +
+      preview.duplicateRecurringTemplateIds.length +
       preview.duplicateTransactionIds.length +
       preview.duplicateWalletIds.length
     );
@@ -110,7 +112,7 @@ export function ImportExportManager() {
       const result = await importBackup(backup, mode);
 
       setMessage(
-        `Import complete. Saved ${result.transactions} transactions, ${result.categories} categories, and ${result.wallets} wallets.`,
+        `Import complete. Saved ${result.transactions} transactions, ${result.categories} categories, ${result.wallets} wallets, ${result.budgetLimits} budgets, and ${result.recurringTemplates} templates.`,
       );
       setBackup(null);
       setPreview(null);
@@ -213,10 +215,12 @@ export function ImportExportManager() {
             </span>
           </div>
 
-          <div className="mt-5 grid gap-3 sm:grid-cols-4">
+          <div className="mt-5 grid gap-3 sm:grid-cols-3 xl:grid-cols-6">
             <PreviewStat label="Transactions" value={preview.summary.transactions} />
             <PreviewStat label="Categories" value={preview.summary.categories} />
             <PreviewStat label="Wallets" value={preview.summary.wallets} />
+            <PreviewStat label="Budgets" value={preview.summary.budgetLimits} />
+            <PreviewStat label="Templates" value={preview.summary.recurringTemplates} />
             <PreviewStat label="Duplicate IDs" value={duplicateCount} />
           </div>
 

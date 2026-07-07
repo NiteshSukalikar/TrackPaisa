@@ -3,6 +3,7 @@ import React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { TransactionDraftForm } from "@/features/transactions/transaction-draft-form";
 import { defaultCategories } from "@/lib/constants/default-categories";
+import { listWallets } from "@/lib/db/repositories/advanced-tracking-repository";
 import { listCategories, seedDefaultCategories } from "@/lib/db/repositories/categories-repository";
 import { addTransaction } from "@/lib/db/repositories/transactions-repository";
 
@@ -11,22 +12,29 @@ vi.mock("@/lib/db/repositories/categories-repository", () => ({
   seedDefaultCategories: vi.fn(),
 }));
 
+vi.mock("@/lib/db/repositories/advanced-tracking-repository", () => ({
+  listWallets: vi.fn(),
+}));
+
 vi.mock("@/lib/db/repositories/transactions-repository", () => ({
   addTransaction: vi.fn(),
 }));
 
 const mockedListCategories = vi.mocked(listCategories);
+const mockedListWallets = vi.mocked(listWallets);
 const mockedSeedDefaultCategories = vi.mocked(seedDefaultCategories);
 const mockedAddTransaction = vi.mocked(addTransaction);
 
 describe("TransactionDraftForm", () => {
   beforeEach(() => {
     mockedListCategories.mockReset();
+    mockedListWallets.mockReset();
     mockedSeedDefaultCategories.mockReset();
     mockedAddTransaction.mockReset();
 
     mockedSeedDefaultCategories.mockResolvedValue(false);
     mockedListCategories.mockResolvedValue(defaultCategories);
+    mockedListWallets.mockResolvedValue([]);
   });
 
   it("saves an expense draft through the transaction repository", async () => {
@@ -56,6 +64,7 @@ describe("TransactionDraftForm", () => {
         date: "2026-07-07",
         walletId: undefined,
         note: "lunch",
+        tags: [],
       });
     });
 
@@ -88,6 +97,7 @@ describe("TransactionDraftForm", () => {
         date: "2026-07-07",
         walletId: undefined,
         note: undefined,
+        tags: [],
       });
     });
 
