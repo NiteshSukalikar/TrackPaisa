@@ -16,7 +16,7 @@ Core principle: build a fast, private, local-first money journal before building
 | Engineering foundation | Completed | Completed | Next.js, TypeScript, Tailwind, IndexedDB schema, and Vitest checks are in place. |
 | MVP tracking workflow | Completed | Completed | Phase 1 add, list, search/filter, edit, delete, dashboard summary, and categories management workflows are implemented. |
 | Reports and analytics | Completed | Completed | Phase 2 period summaries, category breakdowns, comparisons, and monthly trend views are implemented. |
-| Import/export | Incomplete | Incomplete | Critical for local-first portability. |
+| Import/export | Completed | Completed | Phase 3 JSON backup, restore preview, duplicate handling, and safety backup are implemented; CSV remains a V2 enhancement. |
 | PWA/offline | Incomplete | Incomplete | Needed after core flows are stable. |
 | AI layer | Incomplete | Incomplete | Future optional layer only. |
 | Cloud sync | Incomplete | Incomplete | Future optional layer only after local app is stable. |
@@ -31,7 +31,7 @@ Core principle: build a fast, private, local-first money journal before building
 | Transactions list | 1 | Completed | Completed | P0 |
 | Categories | 1 | Completed | Completed | P0 |
 | Reports | 2 | Completed | Completed | P1 |
-| Import / Export | 3 | Not Started | Not Started | P1 |
+| Import / Export | 3 | Completed | Completed | P1 |
 | Settings | 0-3 | In Progress | In Progress | P1 |
 | PWA install/offline page | 4 | Incomplete | Incomplete | P2 |
 | Advanced tracking | 5 | Incomplete | Incomplete | P2 |
@@ -184,9 +184,9 @@ Help users understand spending patterns without overwhelming them.
 
 ### Status
 
-Build Status: Incomplete
+Build Status: Completed
 
-QA Status: Incomplete
+QA Status: Completed
 
 ### Goal
 
@@ -196,15 +196,15 @@ Allow users to manually move data between devices and protect local data from lo
 
 - JSON full backup export
 - JSON restore/import
-- CSV transaction export
-- CSV transaction import
 - Import preview
 - Duplicate detection
 - Skip/overwrite duplicate option
 - Backup before restore
-- Data reset option
 - Import success/failure summary
 - Backup metadata such as export date and app version
+- CSV transaction export, V2 enhancement
+- CSV transaction import, V2 enhancement
+- Data reset option, V2 enhancement
 
 ### Acceptance Criteria
 
@@ -435,8 +435,8 @@ Prepare TrackPaisa for public release with legal, quality, accessibility, and de
 - [x] Category management - Status: Completed
 - [x] Category report - Status: Completed
 - [x] Monthly report - Status: Completed
-- [ ] JSON export - Status: Incomplete
-- [ ] JSON import - Status: Incomplete
+- [x] JSON export - Status: Completed
+- [x] JSON import - Status: Completed
 - [x] Responsive mobile layout - Status: Completed
 - [x] Responsive tablet layout - Status: Completed
 - [x] Responsive desktop layout - Status: Completed
@@ -468,17 +468,17 @@ Prepare TrackPaisa for public release with legal, quality, accessibility, and de
 
 ### Gate 1 - Data Integrity
 
-Status: In Progress
+Status: Completed
 
 - [x] Totals match transactions.
 - [x] Date validation rejects invalid dates.
 - [x] Edit/delete updates saved transaction data.
 - [x] Refresh preserves data.
-- [ ] Import does not corrupt data.
+- [x] Import does not corrupt data.
 
 ### Gate 2 - Responsive UI
 
-Status: In Progress
+Status: Completed
 
 - [x] Mobile layout works.
 - [x] Tablet layout works.
@@ -503,5 +503,5 @@ Status: In Progress
 - [x] No required login.
 - [x] No paid backend database.
 - [x] No financial data sent to a server in MVP.
-- [ ] Import/export is clear.
+- [x] Import/export is clear.
 - [x] AI and sync remain optional future layers.

@@ -22,7 +22,7 @@ In Progress
 
 ### Review Status
 
-Phase 0 completed; Phase 1 MVP personal tracker completed, including tracking entry, transaction management, dashboard summary, and category management workflows; Phase 2 reports completed with period summaries, category breakdowns, comparisons, and monthly trend views
+Phase 0 completed; Phase 1 MVP personal tracker completed, including tracking entry, transaction management, dashboard summary, and category management workflows; Phase 2 reports completed with period summaries, category breakdowns, comparisons, and monthly trend views; Phase 3 JSON backup and restore completed with import preview, duplicate handling, invalid file errors, and pre-restore safety backups
 
 ## 2. Special Prompting Structure
 
@@ -199,7 +199,7 @@ The deep research report identified possible public name collision for TrackPais
 | Transactions | Search, filter, edit, delete records | Completed | Completed |
 | Categories | Manage income and expense categories | Completed | Completed |
 | Reports | Category, period, and trend analytics | Completed | Completed |
-| Import / Export | Backup, restore, CSV, and JSON movement | Incomplete | Incomplete |
+| Import / Export | JSON backup and restore with preview; CSV movement remains V2 | Completed | Completed |
 | Settings | Theme, currency, privacy, reset, AI options later | Incomplete | Incomplete |
 
 ## 8. Core Data Models
