@@ -32,7 +32,7 @@ Core principle: build a fast, private, local-first money journal before building
 | Categories | 1 | Completed | Completed | P0 |
 | Reports | 2 | Completed | Completed | P1 |
 | Import / Export | 3 | Completed | Completed | P1 |
-| Settings | 0-4 | Completed | Completed | P1 |
+| Settings | 0-4 | Completed | Completed | P1 | Includes light/dark mode, green-blue/colorful theme selection, and PWA status controls. |
 | PWA install/offline page | 4 | Completed | Completed | P2 |
 | Advanced tracking | 5 | Incomplete | Incomplete | P2 |
 | AI assistant/insights | 6 | Incomplete | Incomplete | P3 |
@@ -72,6 +72,7 @@ Prepare project identity, technical foundation, design system, navigation, and l
 - App shell
 - Light mode
 - Dark mode
+- Green-blue and colorful theme palettes
 - Theme switcher
 - Mobile bottom navigation
 - Desktop sidebar
@@ -84,6 +85,7 @@ Prepare project identity, technical foundation, design system, navigation, and l
 
 - App opens on mobile, tablet, and desktop.
 - Theme toggle works.
+- Color theme selection works from Settings.
 - Navigation structure is clear.
 - Brand colors and logo are visible.
 - Empty states are readable and useful.

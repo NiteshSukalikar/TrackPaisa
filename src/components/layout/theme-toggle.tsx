@@ -2,31 +2,36 @@
 
 import { Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
-
-type Theme = "light" | "dark";
-
-const storageKey = "trackpaisa-theme";
-
-function applyTheme(theme: Theme) {
-  document.documentElement.dataset.theme = theme;
-  document.documentElement.classList.toggle("dark", theme === "dark");
-}
+import {
+  applyColorTheme,
+  appearanceChangeEvent,
+  getStoredColorTheme,
+  getStoredThemeMode,
+  saveThemeMode,
+  type ThemeMode,
+} from "@/lib/utils/appearance";
 
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>("light");
+  const [theme, setTheme] = useState<ThemeMode>("light");
 
   useEffect(() => {
-    const storedTheme = window.localStorage.getItem(storageKey);
-    const initialTheme = storedTheme === "dark" ? "dark" : "light";
-    setTheme(initialTheme);
-    applyTheme(initialTheme);
+    function syncTheme() {
+      const storedTheme = getStoredThemeMode();
+      setTheme(storedTheme);
+      applyColorTheme(getStoredColorTheme());
+    }
+
+    syncTheme();
+    window.addEventListener(appearanceChangeEvent, syncTheme);
+
+    return () => {
+      window.removeEventListener(appearanceChangeEvent, syncTheme);
+    };
   }, []);
 
   function toggleTheme() {
     const nextTheme = theme === "dark" ? "light" : "dark";
-    setTheme(nextTheme);
-    window.localStorage.setItem(storageKey, nextTheme);
-    applyTheme(nextTheme);
+    saveThemeMode(nextTheme);
   }
 
   return (

@@ -106,7 +106,7 @@ Responsibilities:
 
 - Test add, edit, delete, filter, search, import, export, and report calculations.
 - Test mobile, tablet, and desktop layouts.
-- Test light mode, dark mode, and theme switching.
+- Test light mode, dark mode, and green-blue/colorful theme switching.
 - Test invalid imports, duplicate records, empty states, large lists, and browser refresh persistence.
 - Treat data loss and incorrect totals as high-severity defects.
 
@@ -200,7 +200,7 @@ The deep research report identified possible public name collision for TrackPais
 | Categories | Manage income and expense categories | Completed | Completed |
 | Reports | Category, period, and trend analytics | Completed | Completed |
 | Import / Export | JSON backup and restore with preview; CSV movement remains V2 | Completed | Completed |
-| Settings | Theme, PWA install/offline status, privacy posture, currency/reset/AI options later | Completed | Completed |
+| Settings | Light/dark mode, green-blue/colorful theme selection, PWA install/offline status, privacy posture, currency/reset/AI options later | Completed | Completed |
 
 ## 8. Core Data Models
 
