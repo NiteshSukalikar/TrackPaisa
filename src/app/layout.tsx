@@ -1,9 +1,21 @@
 import type { Metadata, Viewport } from "next";
+import { PwaRegistration } from "@/components/layout/pwa-registration";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  applicationName: "TrackPaisa",
   title: "TrackPaisa",
   description: "Track every rupee, without the clutter.",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "TrackPaisa",
+  },
+  icons: {
+    icon: "/trackpaisa-logo.svg",
+    apple: "/trackpaisa-logo.svg",
+  },
 };
 
 export const viewport: Viewport = {
@@ -22,7 +34,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="font-sans antialiased">{children}</body>
+      <body className="font-sans antialiased">
+        <PwaRegistration />
+        {children}
+      </body>
     </html>
   );
 }

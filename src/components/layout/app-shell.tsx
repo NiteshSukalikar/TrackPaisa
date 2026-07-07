@@ -86,8 +86,8 @@ export function AppShell({
         <div className="absolute bottom-6 left-5 right-5 rounded-lg border border-[var(--border)] bg-[var(--bg)] p-4 text-sm text-[var(--muted)]">
           <p className="font-semibold text-[var(--text)]">Local-first by default</p>
           <p className="mt-2 leading-6">
-            No account needed. Your data stays on this device, with export and
-            restore planned before launch.
+            No account needed. Your data stays on this device, with export,
+            restore, and offline shell support built in.
           </p>
         </div>
       </aside>

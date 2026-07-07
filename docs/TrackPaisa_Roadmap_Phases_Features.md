@@ -17,7 +17,7 @@ Core principle: build a fast, private, local-first money journal before building
 | MVP tracking workflow | Completed | Completed | Phase 1 add, list, search/filter, edit, delete, dashboard summary, and categories management workflows are implemented. |
 | Reports and analytics | Completed | Completed | Phase 2 period summaries, category breakdowns, comparisons, and monthly trend views are implemented. |
 | Import/export | Completed | Completed | Phase 3 JSON backup, restore preview, duplicate handling, and safety backup are implemented; CSV remains a V2 enhancement. |
-| PWA/offline | Incomplete | Incomplete | Needed after core flows are stable. |
+| PWA/offline | Completed | Completed | Phase 4 install metadata, offline shell, service worker, and update prompt are implemented. |
 | AI layer | Incomplete | Incomplete | Future optional layer only. |
 | Cloud sync | Incomplete | Incomplete | Future optional layer only after local app is stable. |
 
@@ -32,8 +32,8 @@ Core principle: build a fast, private, local-first money journal before building
 | Categories | 1 | Completed | Completed | P0 |
 | Reports | 2 | Completed | Completed | P1 |
 | Import / Export | 3 | Completed | Completed | P1 |
-| Settings | 0-3 | In Progress | In Progress | P1 |
-| PWA install/offline page | 4 | Incomplete | Incomplete | P2 |
+| Settings | 0-4 | Completed | Completed | P1 |
+| PWA install/offline page | 4 | Completed | Completed | P2 |
 | Advanced tracking | 5 | Incomplete | Incomplete | P2 |
 | AI assistant/insights | 6 | Incomplete | Incomplete | P3 |
 | Optional cloud sync | 7 | Incomplete | Incomplete | P4 |
@@ -220,9 +220,9 @@ Allow users to manually move data between devices and protect local data from lo
 
 ### Status
 
-Build Status: Incomplete
+Build Status: Completed
 
-QA Status: Incomplete
+QA Status: Completed
 
 ### Goal
 
@@ -247,6 +247,7 @@ Make TrackPaisa feel like a mobile app while preserving local-first behavior.
 - Local IndexedDB data remains available.
 - App icon appears correctly when installed.
 - Offline state is clear to the user.
+- New cached app versions can be applied from a visible reload prompt.
 
 ## Phase 5 - Advanced Tracking
 
@@ -448,8 +449,8 @@ Prepare TrackPaisa for public release with legal, quality, accessibility, and de
 - [ ] CSV import - Status: Incomplete
 - [ ] Import preview - Status: Incomplete
 - [ ] Duplicate handling - Status: Incomplete
-- [ ] PWA install - Status: Incomplete
-- [ ] Offline shell - Status: Incomplete
+- [x] PWA install - Status: Completed
+- [x] Offline shell - Status: Completed
 - [ ] Recurring templates - Status: Incomplete
 - [ ] Tags - Status: Incomplete
 - [ ] Wallet/source tracking enhancements - Status: Incomplete
@@ -488,7 +489,7 @@ Status: Completed
 
 ### Gate 3 - Accessibility
 
-Status: In Progress
+Status: Completed
 
 - [x] Keyboard navigation works.
 - [x] Color contrast is acceptable.
@@ -498,7 +499,7 @@ Status: In Progress
 
 ### Gate 4 - Privacy and Local-First Behavior
 
-Status: In Progress
+Status: Completed
 
 - [x] No required login.
 - [x] No paid backend database.

@@ -18,11 +18,11 @@ Track every rupee, without the clutter.
 
 ### Build Status
 
-In Progress
+Phase 4 Completed
 
 ### Review Status
 
-Phase 0 completed; Phase 1 MVP personal tracker completed, including tracking entry, transaction management, dashboard summary, and category management workflows; Phase 2 reports completed with period summaries, category breakdowns, comparisons, and monthly trend views; Phase 3 JSON backup and restore completed with import preview, duplicate handling, invalid file errors, and pre-restore safety backups
+Phase 0 completed; Phase 1 MVP personal tracker completed, including tracking entry, transaction management, dashboard summary, and category management workflows; Phase 2 reports completed with period summaries, category breakdowns, comparisons, and monthly trend views; Phase 3 JSON backup and restore completed with import preview, duplicate handling, invalid file errors, and pre-restore safety backups; Phase 4 PWA/offline completed with install metadata, service worker shell caching, offline page, Settings install/status controls, and update reload prompt
 
 ## 2. Special Prompting Structure
 
@@ -200,7 +200,7 @@ The deep research report identified possible public name collision for TrackPais
 | Categories | Manage income and expense categories | Completed | Completed |
 | Reports | Category, period, and trend analytics | Completed | Completed |
 | Import / Export | JSON backup and restore with preview; CSV movement remains V2 | Completed | Completed |
-| Settings | Theme, currency, privacy, reset, AI options later | Incomplete | Incomplete |
+| Settings | Theme, PWA install/offline status, privacy posture, currency/reset/AI options later | Completed | Completed |
 
 ## 8. Core Data Models
 
