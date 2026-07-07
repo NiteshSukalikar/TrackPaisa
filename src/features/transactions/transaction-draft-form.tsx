@@ -1,9 +1,11 @@
 "use client";
 
 import { ArrowDownLeft, ArrowUpRight, CheckCircle2 } from "lucide-react";
+import React from "react";
 import type { FormEvent, ReactNode } from "react";
 import { useMemo, useState } from "react";
 import { defaultCategories } from "@/lib/constants/default-categories";
+import { addTransaction } from "@/lib/db/repositories/transactions-repository";
 import type { TransactionType } from "@/lib/types/finance";
 import { validateTransactionDraft } from "@/lib/utils/validation";
 
@@ -20,6 +22,7 @@ export function TransactionDraftForm({ initialType = "expense" }: TransactionDra
   const [note, setNote] = useState("");
   const [errors, setErrors] = useState<string[]>([]);
   const [savedMessage, setSavedMessage] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
 
   const categories = useMemo(
     () => defaultCategories.filter((category) => category.type === type),
@@ -32,24 +35,42 @@ export function TransactionDraftForm({ initialType = "expense" }: TransactionDra
     setSavedMessage("");
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const result = validateTransactionDraft({
+    const draft = {
       type,
       amount: Number(amount),
       categoryId,
       date,
       walletId: walletId.trim() || undefined,
       note: note.trim() || undefined,
-    });
+    };
+    const result = validateTransactionDraft(draft);
 
     setErrors(result.errors);
+    setSavedMessage("");
 
-    if (result.valid) {
-      setSavedMessage("Transaction draft is valid. IndexedDB save comes next.");
-    } else {
-      setSavedMessage("");
+    if (!result.valid) {
+      return;
+    }
+
+    setIsSaving(true);
+
+    try {
+      const savedTransaction = await addTransaction(draft);
+
+      setAmount("");
+      setCategoryId("");
+      setWalletId("");
+      setNote("");
+      setSavedMessage(
+        `${savedTransaction.type === "income" ? "Income" : "Expense"} saved on this device.`,
+      );
+    } catch {
+      setErrors(["Transaction could not be saved. Please try again."]);
+    } finally {
+      setIsSaving(false);
     }
   }
 
@@ -62,8 +83,7 @@ export function TransactionDraftForm({ initialType = "expense" }: TransactionDra
         <p className="text-sm font-bold text-[var(--primary)]">Fast entry</p>
         <h2 className="mt-2 text-2xl font-bold">Add income or expense</h2>
         <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-          This Phase 1 starter validates the transaction draft before persistence
-          is wired into IndexedDB.
+          Save income and expenses locally. No account needed; your data stays on this device.
         </p>
       </div>
 
@@ -162,9 +182,10 @@ export function TransactionDraftForm({ initialType = "expense" }: TransactionDra
 
       <button
         type="submit"
+        disabled={isSaving}
         className="min-h-11 rounded-lg bg-[var(--primary)] px-4 text-sm font-bold text-white"
       >
-        Validate transaction
+        {isSaving ? "Saving..." : `Save ${type}`}
       </button>
     </form>
   );

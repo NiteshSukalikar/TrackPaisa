@@ -1,4 +1,5 @@
 import { getTrackPaisaDb } from "@/lib/db/database";
+import { seedDefaultCategories } from "@/lib/db/repositories/categories-repository";
 import type { Category, Transaction, TransactionType } from "@/lib/types/finance";
 import type { TransactionDraft } from "@/lib/utils/validation";
 import { validateTransactionDraft } from "@/lib/utils/validation";
@@ -111,6 +112,7 @@ export async function addTransaction(draft: TransactionDraft) {
   const db = getTrackPaisaDb();
   const transaction = createTransactionFromDraft(draft);
 
+  await seedDefaultCategories();
   await db.transactions.add(transaction);
 
   return transaction;

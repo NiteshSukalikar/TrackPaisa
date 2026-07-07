@@ -27,7 +27,7 @@ Core principle: build a fast, private, local-first money journal before building
 |---|---:|---:|---:|---:|
 | App shell / layout | 0 | Completed | Completed | P0 |
 | Overview dashboard | 1 | Incomplete | Incomplete | P0 |
-| Add transaction | 1 | In Progress | In Progress | P0 |
+| Add transaction | 1 | Completed | Completed | P0 |
 | Transactions list | 1 | Not Started | Not Started | P0 |
 | Categories | 1 | Not Started | Not Started | P0 |
 | Reports | 2 | Not Started | Not Started | P1 |
@@ -423,8 +423,8 @@ Prepare TrackPaisa for public release with legal, quality, accessibility, and de
 - [x] IndexedDB wrapper - Status: Completed
 - [x] Repository/service layer - Status: Completed
 - [x] Default categories seed - Status: Completed
-- [ ] Add income - Status: In Progress
-- [ ] Add expense - Status: In Progress
+- [x] Add income - Status: Completed
+- [x] Add expense - Status: Completed
 - [ ] Transaction list - Status: Incomplete
 - [ ] Search and filters - Status: Incomplete
 - [ ] Edit transaction - Status: Incomplete
