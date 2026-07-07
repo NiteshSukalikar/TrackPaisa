@@ -1,10 +1,10 @@
 import { AppShell } from "@/components/layout/app-shell";
-import { EmptyOverview } from "@/features/overview/empty-overview";
+import { OverviewDashboard } from "@/features/overview/overview-dashboard";
 
 export default function Home() {
   return (
     <AppShell>
-      <EmptyOverview />
+      <OverviewDashboard />
     </AppShell>
   );
 }

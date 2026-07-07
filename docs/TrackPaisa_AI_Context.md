@@ -22,7 +22,7 @@ In Progress
 
 ### Review Status
 
-Phase 0 completed; Phase 1 tracking entry and transaction management workflows completed
+Phase 0 completed; Phase 1 tracking entry, transaction management, and dashboard summary workflows completed
 
 ## 2. Special Prompting Structure
 
@@ -194,7 +194,7 @@ The deep research report identified possible public name collision for TrackPais
 
 | Screen | Purpose | Build Status | QA Status |
 |---|---|---:|---:|
-| Overview | Monthly summary and recent activity | Incomplete | Incomplete |
+| Overview | Monthly summary and recent activity | Completed | Completed |
 | Add Transaction | Fast income/expense entry | Completed | Completed |
 | Transactions | Search, filter, edit, delete records | Completed | Completed |
 | Categories | Manage income and expense categories | Incomplete | Incomplete |

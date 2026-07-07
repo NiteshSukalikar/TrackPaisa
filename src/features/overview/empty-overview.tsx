@@ -16,12 +16,11 @@ export function EmptyOverview() {
         <div>
           <p className="text-sm font-bold text-[var(--primary)]">Track every rupee, without the clutter.</p>
           <h2 className="mt-3 max-w-2xl text-3xl font-bold leading-tight md:text-4xl">
-            Your local-first money journal is ready for the first transaction flow.
+            Your local-first money journal is ready for your first entry.
           </h2>
           <p className="mt-4 max-w-2xl text-base leading-7 text-[var(--muted)]">
-            Phase 0 establishes the responsive shell, brand system, theme handling,
-            data model, and tests. Phase 1 can now build add, edit, delete, and
-            persistence workflows on top of a stable base.
+            Add income or expenses to turn this overview into a monthly summary
+            with savings, recent activity, and category spending.
           </p>
         </div>
         <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5">
@@ -53,14 +52,14 @@ export function EmptyOverview() {
 
       <section className="grid gap-4 lg:grid-cols-2">
         <article className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5">
-          <h3 className="text-lg font-bold">Foundation checklist</h3>
+          <h3 className="text-lg font-bold">Ready on this device</h3>
           <div className="mt-4 grid gap-3 text-sm text-[var(--muted)]">
             {[
-              "Next.js App Router with TypeScript",
-              "Tailwind design tokens for light and dark mode",
-              "Responsive desktop sidebar and mobile bottom navigation",
-              "Typed local-first data models and default categories",
-              "Vitest coverage for calculations, validation, and settings",
+              "Income and expense entry",
+              "Searchable transaction history",
+              "Edit and delete controls",
+              "Local IndexedDB storage",
+              "Responsive mobile and desktop layout",
             ].map((item) => (
               <p key={item} className="rounded-lg bg-[var(--surface-muted)] px-3 py-2">
                 {item}
@@ -70,11 +69,10 @@ export function EmptyOverview() {
         </article>
 
         <article className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5">
-          <h3 className="text-lg font-bold">Next build target</h3>
+          <h3 className="text-lg font-bold">Quick start</h3>
           <p className="mt-3 text-sm leading-6 text-[var(--muted)]">
-            The first Phase 1 slice should add income and expense entry with
-            amount, type, category, wallet, date, note, validation, and IndexedDB
-            persistence.
+            Save a salary, freelance payment, grocery bill, or any daily expense.
+            The dashboard updates from local records after entries are saved.
           </p>
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
             <a
