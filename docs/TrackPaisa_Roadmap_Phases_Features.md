@@ -14,7 +14,7 @@ Core principle: build a fast, private, local-first money journal before building
 | Branding | Completed | Completed | Working name, logo concept, and palette are in place; public launch validation is still required. |
 | Design system | In Progress | In Progress | Phase 0 tokens, shell, light/dark mode, and layout are implemented; production components continue in later phases. |
 | Engineering foundation | Completed | Completed | Next.js, TypeScript, Tailwind, IndexedDB schema, and Vitest checks are in place. |
-| MVP tracking workflow | In Progress | In Progress | Phase 1 add-transaction validation shell has started; persistence and list workflows remain. |
+| MVP tracking workflow | In Progress | In Progress | Phase 1 add, list, search/filter, edit, and delete workflows are implemented; dashboard and categories management remain. |
 | Reports and analytics | Incomplete | Incomplete | Needed for product value, but should follow stable data entry. |
 | Import/export | Incomplete | Incomplete | Critical for local-first portability. |
 | PWA/offline | Incomplete | Incomplete | Needed after core flows are stable. |
@@ -427,8 +427,8 @@ Prepare TrackPaisa for public release with legal, quality, accessibility, and de
 - [x] Add expense - Status: Completed
 - [x] Transaction list - Status: Completed
 - [x] Search and filters - Status: Completed
-- [ ] Edit transaction - Status: Incomplete
-- [ ] Delete transaction - Status: Incomplete
+- [x] Edit transaction - Status: Completed
+- [x] Delete transaction - Status: Completed
 - [ ] Dashboard summary - Status: Incomplete
 - [ ] Category report - Status: Incomplete
 - [ ] Monthly report - Status: Incomplete
@@ -469,7 +469,7 @@ Status: In Progress
 
 - [x] Totals match transactions.
 - [x] Date validation rejects invalid dates.
-- [ ] Edit/delete updates reports.
+- [x] Edit/delete updates saved transaction data.
 - [ ] Refresh preserves data.
 - [ ] Import does not corrupt data.
 

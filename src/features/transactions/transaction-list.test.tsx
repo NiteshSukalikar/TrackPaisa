@@ -3,7 +3,11 @@ import React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { defaultCategories } from "@/lib/constants/default-categories";
 import { listCategories, seedDefaultCategories } from "@/lib/db/repositories/categories-repository";
-import { listTransactions } from "@/lib/db/repositories/transactions-repository";
+import {
+  deleteTransaction,
+  listTransactions,
+  updateTransaction,
+} from "@/lib/db/repositories/transactions-repository";
 import { TransactionList } from "@/features/transactions/transaction-list";
 
 vi.mock("@/lib/db/repositories/categories-repository", () => ({
@@ -12,18 +16,24 @@ vi.mock("@/lib/db/repositories/categories-repository", () => ({
 }));
 
 vi.mock("@/lib/db/repositories/transactions-repository", () => ({
+  deleteTransaction: vi.fn(),
   listTransactions: vi.fn(),
+  updateTransaction: vi.fn(),
 }));
 
 const mockedListCategories = vi.mocked(listCategories);
 const mockedListTransactions = vi.mocked(listTransactions);
 const mockedSeedDefaultCategories = vi.mocked(seedDefaultCategories);
+const mockedUpdateTransaction = vi.mocked(updateTransaction);
+const mockedDeleteTransaction = vi.mocked(deleteTransaction);
 
 describe("TransactionList", () => {
   beforeEach(() => {
     mockedSeedDefaultCategories.mockReset();
     mockedListCategories.mockReset();
     mockedListTransactions.mockReset();
+    mockedUpdateTransaction.mockReset();
+    mockedDeleteTransaction.mockReset();
 
     mockedSeedDefaultCategories.mockResolvedValue(false);
     mockedListCategories.mockResolvedValue(defaultCategories);
@@ -50,6 +60,18 @@ describe("TransactionList", () => {
         updatedAt: "2026-07-05T20:00:00.000Z",
       },
     ]);
+    mockedUpdateTransaction.mockResolvedValue({
+      id: "dinner",
+      type: "expense",
+      amount: 500,
+      categoryId: "expense-food",
+      walletId: "UPI",
+      date: "2026-07-05",
+      note: "Dinner with tip",
+      createdAt: "2026-07-05T20:00:00.000Z",
+      updatedAt: "2026-07-05T21:00:00.000Z",
+    });
+    mockedDeleteTransaction.mockResolvedValue(undefined);
   });
 
   it("renders saved transactions with category, note, wallet, and amount context", async () => {
@@ -89,5 +111,48 @@ describe("TransactionList", () => {
     render(<TransactionList />);
 
     expect(await screen.findByText("No transactions found")).toBeInTheDocument();
+  });
+
+  it("updates an existing transaction from the inline edit form", async () => {
+    render(<TransactionList />);
+
+    await screen.findByText("Dinner");
+
+    fireEvent.click(screen.getByRole("button", { name: "Edit Dinner transaction" }));
+    fireEvent.change(screen.getByLabelText("Edit amount"), { target: { value: "500" } });
+    fireEvent.change(screen.getByLabelText("Edit note"), { target: { value: " Dinner with tip " } });
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+
+    await waitFor(() => {
+      expect(mockedUpdateTransaction).toHaveBeenCalledWith("dinner", {
+        type: "expense",
+        amount: 500,
+        categoryId: "expense-food",
+        date: "2026-07-05",
+        walletId: "UPI",
+        note: "Dinner with tip",
+      });
+    });
+
+    expect(await screen.findByRole("status")).toHaveTextContent("Transaction updated.");
+  });
+
+  it("deletes a transaction after confirmation", async () => {
+    const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
+
+    render(<TransactionList />);
+
+    await screen.findByText("Dinner");
+
+    fireEvent.click(screen.getByRole("button", { name: "Delete Dinner transaction" }));
+
+    await waitFor(() => {
+      expect(mockedDeleteTransaction).toHaveBeenCalledWith("dinner");
+    });
+
+    expect(confirmSpy).toHaveBeenCalledWith("Delete this transaction? This cannot be undone.");
+    expect(await screen.findByRole("status")).toHaveTextContent("Transaction deleted.");
+
+    confirmSpy.mockRestore();
   });
 });

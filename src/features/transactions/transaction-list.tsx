@@ -1,11 +1,27 @@
 "use client";
 
-import { ArrowDownLeft, ArrowUpRight, Plus, Search, SlidersHorizontal } from "lucide-react";
+import {
+  ArrowDownLeft,
+  ArrowUpRight,
+  Pencil,
+  Plus,
+  Save,
+  Search,
+  SlidersHorizontal,
+  Trash2,
+  X,
+} from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import { seedDefaultCategories, listCategories } from "@/lib/db/repositories/categories-repository";
-import { listTransactions } from "@/lib/db/repositories/transactions-repository";
+import {
+  deleteTransaction,
+  listTransactions,
+  updateTransaction,
+} from "@/lib/db/repositories/transactions-repository";
 import type { Category, Transaction, TransactionType } from "@/lib/types/finance";
 import { formatInr } from "@/lib/utils/currency";
+import type { TransactionDraft } from "@/lib/utils/validation";
+import { validateTransactionDraft } from "@/lib/utils/validation";
 
 type TypeFilter = TransactionType | "all";
 
@@ -25,12 +41,27 @@ const initialFilters: Filters = {
   dateTo: "",
 };
 
+interface EditDraft {
+  type: TransactionType;
+  amount: string;
+  categoryId: string;
+  date: string;
+  walletId: string;
+  note: string;
+}
+
 export function TransactionList() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [filters, setFilters] = useState<Filters>(initialFilters);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [actionMessage, setActionMessage] = useState("");
+  const [actionError, setActionError] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editDraft, setEditDraft] = useState<EditDraft | null>(null);
+  const [pendingActionId, setPendingActionId] = useState<string | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     let isMounted = true;
@@ -73,7 +104,7 @@ export function TransactionList() {
     return () => {
       isMounted = false;
     };
-  }, [filters]);
+  }, [filters, reloadKey]);
 
   const categoriesById = useMemo(
     () => new Map(categories.map((category) => [category.id, category])),
@@ -90,6 +121,93 @@ export function TransactionList() {
       [key]: value,
       ...(key === "type" ? { categoryId: "" } : {}),
     }));
+  }
+
+  function refreshTransactions() {
+    setReloadKey((current) => current + 1);
+  }
+
+  function startEdit(transaction: Transaction) {
+    setEditingId(transaction.id);
+    setEditDraft({
+      type: transaction.type,
+      amount: String(transaction.amount),
+      categoryId: transaction.categoryId,
+      date: transaction.date,
+      walletId: transaction.walletId ?? "",
+      note: transaction.note ?? "",
+    });
+    setActionError("");
+    setActionMessage("");
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setEditDraft(null);
+    setActionError("");
+  }
+
+  async function saveEdit(transactionId: string) {
+    if (!editDraft) {
+      return;
+    }
+
+    const draft: TransactionDraft = {
+      type: editDraft.type,
+      amount: Number(editDraft.amount),
+      categoryId: editDraft.categoryId,
+      date: editDraft.date,
+      walletId: editDraft.walletId.trim() || undefined,
+      note: editDraft.note.trim() || undefined,
+    };
+    const result = validateTransactionDraft(draft);
+
+    setActionError(result.errors.join(" "));
+    setActionMessage("");
+
+    if (!result.valid) {
+      return;
+    }
+
+    setPendingActionId(`save-${transactionId}`);
+
+    try {
+      await updateTransaction(transactionId, draft);
+      setEditingId(null);
+      setEditDraft(null);
+      setActionMessage("Transaction updated.");
+      refreshTransactions();
+    } catch {
+      setActionError("Transaction could not be updated. Please try again.");
+    } finally {
+      setPendingActionId(null);
+    }
+  }
+
+  async function removeTransaction(transaction: Transaction) {
+    const confirmed = window.confirm("Delete this transaction? This cannot be undone.");
+
+    if (!confirmed) {
+      return;
+    }
+
+    setPendingActionId(`delete-${transaction.id}`);
+    setActionError("");
+    setActionMessage("");
+
+    try {
+      await deleteTransaction(transaction.id);
+      if (editingId === transaction.id) {
+        setEditingId(null);
+        setEditDraft(null);
+      }
+      setActionMessage("Transaction deleted.");
+      refreshTransactions();
+    } catch {
+      setActionError("Transaction could not be deleted. Please try again.");
+    } finally {
+      setPendingActionId(null);
+    }
   }
 
   return (
@@ -192,6 +310,21 @@ export function TransactionList() {
         </div>
       ) : null}
 
+      {actionError ? (
+        <div role="alert" className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+          {actionError}
+        </div>
+      ) : null}
+
+      {actionMessage ? (
+        <div
+          role="status"
+          className="rounded-lg border border-green-200 bg-green-50 p-4 text-sm font-semibold text-green-800"
+        >
+          {actionMessage}
+        </div>
+      ) : null}
+
       <div className="overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--surface)]">
         <div className="flex items-center justify-between gap-3 border-b border-[var(--border)] px-4 py-3">
           <p className="text-sm font-bold">Saved transactions</p>
@@ -216,6 +349,15 @@ export function TransactionList() {
                 key={transaction.id}
                 transaction={transaction}
                 category={categoriesById.get(transaction.categoryId)}
+                categories={categories}
+                isEditing={editingId === transaction.id}
+                editDraft={editingId === transaction.id ? editDraft : null}
+                pendingActionId={pendingActionId}
+                onStartEdit={startEdit}
+                onCancelEdit={cancelEdit}
+                onDraftChange={setEditDraft}
+                onSaveEdit={saveEdit}
+                onDelete={removeTransaction}
               />
             ))}
           </ul>
@@ -228,11 +370,44 @@ export function TransactionList() {
 function TransactionRow({
   transaction,
   category,
+  categories,
+  isEditing,
+  editDraft,
+  pendingActionId,
+  onStartEdit,
+  onCancelEdit,
+  onDraftChange,
+  onSaveEdit,
+  onDelete,
 }: {
   transaction: Transaction;
   category?: Category;
+  categories: Category[];
+  isEditing: boolean;
+  editDraft: EditDraft | null;
+  pendingActionId: string | null;
+  onStartEdit: (transaction: Transaction) => void;
+  onCancelEdit: () => void;
+  onDraftChange: (draft: EditDraft) => void;
+  onSaveEdit: (transactionId: string) => void;
+  onDelete: (transaction: Transaction) => void;
 }) {
   const isIncome = transaction.type === "income";
+  const editCategories = editDraft
+    ? categories.filter((candidate) => candidate.type === editDraft.type)
+    : [];
+
+  function updateDraft<Key extends keyof EditDraft>(key: Key, value: EditDraft[Key]) {
+    if (!editDraft) {
+      return;
+    }
+
+    onDraftChange({
+      ...editDraft,
+      [key]: value,
+      ...(key === "type" ? { categoryId: "" } : {}),
+    });
+  }
 
   return (
     <li className="grid gap-3 px-4 py-4 md:grid-cols-[1fr_auto] md:items-center">
@@ -261,11 +436,127 @@ function TransactionRow({
         </div>
       </div>
 
-      <p className="text-left text-lg font-bold md:text-right">
-        <span className="sr-only">{isIncome ? "Income amount" : "Expense amount"}</span>
-        {isIncome ? "+" : "-"}
-        {formatInr(transaction.amount)}
-      </p>
+      <div className="flex flex-wrap items-center gap-2 md:justify-end">
+        <p className="mr-auto text-left text-lg font-bold md:mr-2 md:text-right">
+          <span className="sr-only">{isIncome ? "Income amount" : "Expense amount"}</span>
+          {isIncome ? "+" : "-"}
+          {formatInr(transaction.amount)}
+        </p>
+        <button
+          type="button"
+          onClick={() => onStartEdit(transaction)}
+          className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--border)] text-[var(--muted)]"
+          aria-label={`Edit ${transaction.note ?? category?.name ?? "transaction"} transaction`}
+        >
+          <Pencil aria-hidden="true" size={17} />
+        </button>
+        <button
+          type="button"
+          onClick={() => onDelete(transaction)}
+          disabled={pendingActionId === `delete-${transaction.id}`}
+          className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-red-200 text-red-700 disabled:opacity-60"
+          aria-label={`Delete ${transaction.note ?? category?.name ?? "transaction"} transaction`}
+        >
+          <Trash2 aria-hidden="true" size={17} />
+        </button>
+      </div>
+
+      {isEditing && editDraft ? (
+        <form
+          className="grid gap-4 rounded-lg border border-[var(--border)] bg-[var(--bg)] p-4 md:col-span-2"
+          onSubmit={(event) => {
+            event.preventDefault();
+            onSaveEdit(transaction.id);
+          }}
+        >
+          <div className="grid gap-4 md:grid-cols-3">
+            <label className="grid gap-2 text-sm font-bold">
+              Edit type
+              <select
+                value={editDraft.type}
+                onChange={(event) => updateDraft("type", event.target.value as TransactionType)}
+                className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 text-base outline-none"
+              >
+                <option value="income">Income</option>
+                <option value="expense">Expense</option>
+              </select>
+            </label>
+
+            <label className="grid gap-2 text-sm font-bold">
+              Edit amount
+              <input
+                value={editDraft.amount}
+                onChange={(event) => updateDraft("amount", event.target.value)}
+                inputMode="decimal"
+                className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 text-base font-semibold outline-none"
+              />
+            </label>
+
+            <label className="grid gap-2 text-sm font-bold">
+              Edit date
+              <input
+                value={editDraft.date}
+                onChange={(event) => updateDraft("date", event.target.value)}
+                type="date"
+                className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 text-base outline-none"
+              />
+            </label>
+
+            <label className="grid gap-2 text-sm font-bold">
+              Edit category
+              <select
+                value={editDraft.categoryId}
+                onChange={(event) => updateDraft("categoryId", event.target.value)}
+                className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 text-base outline-none"
+              >
+                <option value="">Select category</option>
+                {editCategories.map((candidate) => (
+                  <option key={candidate.id} value={candidate.id}>
+                    {candidate.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="grid gap-2 text-sm font-bold">
+              Edit wallet / source
+              <input
+                value={editDraft.walletId}
+                onChange={(event) => updateDraft("walletId", event.target.value)}
+                className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 text-base outline-none"
+              />
+            </label>
+
+            <label className="grid gap-2 text-sm font-bold">
+              Edit note
+              <input
+                value={editDraft.note}
+                onChange={(event) => updateDraft("note", event.target.value)}
+                className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 text-base outline-none"
+              />
+            </label>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="submit"
+              disabled={pendingActionId === `save-${transaction.id}`}
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[var(--primary)] px-4 text-sm font-bold text-white disabled:opacity-60"
+            >
+              <Save aria-hidden="true" size={17} />
+              {pendingActionId === `save-${transaction.id}` ? "Saving..." : "Save changes"}
+            </button>
+            <button
+              type="button"
+              onClick={onCancelEdit}
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-[var(--border)] px-4 text-sm font-bold"
+            >
+              <X aria-hidden="true" size={17} />
+              Cancel
+            </button>
+          </div>
+        </form>
+      ) : null}
     </li>
   );
 }
