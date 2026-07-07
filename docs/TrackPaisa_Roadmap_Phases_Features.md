@@ -421,7 +421,7 @@ Prepare TrackPaisa for public release with legal, quality, accessibility, and de
 - [x] Light/dark mode - Status: Completed
 - [x] Theme switcher - Status: Completed
 - [x] IndexedDB wrapper - Status: Completed
-- [ ] Repository/service layer - Status: Incomplete
+- [x] Repository/service layer - Status: Completed
 - [x] Default categories seed - Status: Completed
 - [ ] Add income - Status: In Progress
 - [ ] Add expense - Status: In Progress
