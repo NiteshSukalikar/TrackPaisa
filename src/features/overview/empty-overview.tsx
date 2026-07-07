@@ -77,12 +77,18 @@ export function EmptyOverview() {
             persistence.
           </p>
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
-            <button className="min-h-11 rounded-lg bg-[var(--primary)] px-4 text-sm font-bold text-white">
+            <a
+              href="/transactions/new?type=income"
+              className="inline-flex min-h-11 items-center justify-center rounded-lg bg-[var(--primary)] px-4 text-sm font-bold text-white"
+            >
               Add income
-            </button>
-            <button className="min-h-11 rounded-lg border border-[var(--border)] px-4 text-sm font-bold text-[var(--text)]">
+            </a>
+            <a
+              href="/transactions/new?type=expense"
+              className="inline-flex min-h-11 items-center justify-center rounded-lg border border-[var(--border)] px-4 text-sm font-bold text-[var(--text)]"
+            >
               Add expense
-            </button>
+            </a>
           </div>
         </article>
       </section>

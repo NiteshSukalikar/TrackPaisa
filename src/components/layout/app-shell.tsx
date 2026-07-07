@@ -12,7 +12,7 @@ import type { ReactNode } from "react";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 
 const desktopItems = [
-  { label: "Overview", href: "/", icon: Home, active: true },
+  { label: "Overview", href: "/", icon: Home },
   { label: "Transactions", href: "/transactions", icon: ListChecks },
   { label: "Categories", href: "/categories", icon: Tags },
   { label: "Reports", href: "/reports", icon: BarChart3 },
@@ -21,14 +21,34 @@ const desktopItems = [
 ];
 
 const mobileItems = [
-  { label: "Overview", href: "/", icon: Home, active: true },
+  { label: "Overview", href: "/", icon: Home },
   { label: "Add", href: "/transactions/new", icon: Plus },
   { label: "List", href: "/transactions", icon: ListChecks },
   { label: "Reports", href: "/reports", icon: BarChart3 },
   { label: "Settings", href: "/settings", icon: Settings },
 ];
 
-export function AppShell({ children }: { children: ReactNode }) {
+interface AppShellProps {
+  activePath?: string;
+  children: ReactNode;
+  phaseLabel?: string;
+  title?: string;
+}
+
+function isActivePath(itemHref: string, activePath: string) {
+  if (itemHref === "/") {
+    return activePath === "/";
+  }
+
+  return activePath === itemHref || activePath.startsWith(`${itemHref}/`);
+}
+
+export function AppShell({
+  activePath = "/",
+  children,
+  phaseLabel = "Phase 0",
+  title = "Foundation and app shell",
+}: AppShellProps) {
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
       <aside className="fixed inset-y-0 left-0 hidden w-72 border-r border-[var(--border)] bg-[var(--surface)] px-5 py-6 lg:block">
@@ -54,7 +74,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <a
               key={item.label}
               href={item.href}
-              aria-current={item.active ? "page" : undefined}
+              aria-current={isActivePath(item.href, activePath) ? "page" : undefined}
               className="flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm font-semibold text-[var(--muted)] transition hover:bg-[var(--surface-muted)] hover:text-[var(--text)] aria-[current=page]:bg-[var(--surface-muted)] aria-[current=page]:text-[var(--text)]"
             >
               <item.icon aria-hidden="true" size={18} />
@@ -87,8 +107,8 @@ export function AppShell({ children }: { children: ReactNode }) {
               <span className="font-bold">TrackPaisa</span>
             </div>
             <div className="hidden lg:block">
-              <p className="text-sm font-medium text-[var(--muted)]">Phase 0</p>
-              <h1 className="text-2xl font-bold">Foundation and app shell</h1>
+              <p className="text-sm font-medium text-[var(--muted)]">{phaseLabel}</p>
+              <h1 className="text-2xl font-bold">{title}</h1>
             </div>
             <ThemeToggle />
           </div>
@@ -105,7 +125,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <a
             key={item.label}
             href={item.href}
-            aria-current={item.active ? "page" : undefined}
+            aria-current={isActivePath(item.href, activePath) ? "page" : undefined}
             className="flex min-h-12 flex-col items-center justify-center gap-1 rounded-lg text-[11px] font-bold text-[var(--muted)] aria-[current=page]:bg-[var(--surface-muted)] aria-[current=page]:text-[var(--text)]"
           >
             <item.icon aria-hidden="true" size={18} />

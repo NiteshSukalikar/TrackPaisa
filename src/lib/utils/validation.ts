@@ -6,6 +6,8 @@ export interface TransactionDraft {
   amount?: number;
   categoryId?: string;
   date?: string;
+  note?: string;
+  walletId?: string;
 }
 
 export function validateTransactionDraft(draft: TransactionDraft) {
@@ -19,7 +21,7 @@ export function validateTransactionDraft(draft: TransactionDraft) {
     errors.push("Amount must be greater than 0.");
   }
 
-  if (!draft.categoryId) {
+  if (!draft.categoryId?.trim()) {
     errors.push("Category is required.");
   }
 

@@ -18,11 +18,11 @@ Track every rupee, without the clutter.
 
 ### Build Status
 
-Incomplete
+In Progress
 
 ### Review Status
 
-Incomplete
+Phase 0 completed; Phase 1 started
 
 ## 2. Special Prompting Structure
 
@@ -508,4 +508,3 @@ For review tasks, the assistant should:
 2. Include severity and file/line references when reviewing code.
 3. Identify missing tests and product risks.
 4. Avoid rewriting unrelated files.
-

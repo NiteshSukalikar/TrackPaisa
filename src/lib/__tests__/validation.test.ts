@@ -27,4 +27,16 @@ describe("validateTransactionDraft", () => {
       "Date is required.",
     ]);
   });
+
+  it("rejects whitespace categories and impossible calendar dates", () => {
+    const result = validateTransactionDraft({
+      type: "income",
+      amount: 1000,
+      categoryId: "   ",
+      date: "2026-02-30",
+    });
+
+    expect(result.valid).toBe(false);
+    expect(result.errors).toEqual(["Category is required.", "Date is required."]);
+  });
 });
