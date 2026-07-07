@@ -12,9 +12,9 @@ Core principle: build a fast, private, local-first money journal before building
 |---|---:|---:|---|
 | Product strategy | Completed | Completed | Direction is documented in the research and AI context files. |
 | Branding | Completed | Completed | Working name, logo concept, and palette are in place; public launch validation is still required. |
-| Design system | In Progress | In Progress | Phase 0 tokens, shell, light/dark mode, and layout are implemented; production components continue in later phases. |
+| Design system | Completed | Completed | Phase 0 tokens, shell, light/dark mode, layout, and Phase 1 form/list patterns are implemented. |
 | Engineering foundation | Completed | Completed | Next.js, TypeScript, Tailwind, IndexedDB schema, and Vitest checks are in place. |
-| MVP tracking workflow | In Progress | In Progress | Phase 1 add, list, search/filter, edit, delete, and dashboard summary workflows are implemented; categories management remains. |
+| MVP tracking workflow | Completed | Completed | Phase 1 add, list, search/filter, edit, delete, dashboard summary, and categories management workflows are implemented. |
 | Reports and analytics | Incomplete | Incomplete | Needed for product value, but should follow stable data entry. |
 | Import/export | Incomplete | Incomplete | Critical for local-first portability. |
 | PWA/offline | Incomplete | Incomplete | Needed after core flows are stable. |
@@ -29,7 +29,7 @@ Core principle: build a fast, private, local-first money journal before building
 | Overview dashboard | 1 | Completed | Completed | P0 |
 | Add transaction | 1 | Completed | Completed | P0 |
 | Transactions list | 1 | Completed | Completed | P0 |
-| Categories | 1 | Not Started | Not Started | P0 |
+| Categories | 1 | Completed | Completed | P0 |
 | Reports | 2 | Not Started | Not Started | P1 |
 | Import / Export | 3 | Not Started | Not Started | P1 |
 | Settings | 0-3 | In Progress | In Progress | P1 |
@@ -93,9 +93,9 @@ Prepare project identity, technical foundation, design system, navigation, and l
 
 ### Status
 
-Build Status: In Progress
+Build Status: Completed
 
-QA Status: In Progress
+QA Status: Completed
 
 ### Goal
 
@@ -139,6 +139,8 @@ Allow users to manually track income and expenses quickly and reliably.
 - Invalid amount, missing category, and missing date are blocked.
 - Delete action asks for confirmation.
 - Core flow works comfortably on mobile.
+- Users can add, edit, and delete unused custom categories.
+- Custom categories are available when adding or editing transactions.
 
 ## Phase 2 - Reports and Analytics
 
@@ -430,6 +432,7 @@ Prepare TrackPaisa for public release with legal, quality, accessibility, and de
 - [x] Edit transaction - Status: Completed
 - [x] Delete transaction - Status: Completed
 - [x] Dashboard summary - Status: Completed
+- [x] Category management - Status: Completed
 - [ ] Category report - Status: Incomplete
 - [ ] Monthly report - Status: Incomplete
 - [ ] JSON export - Status: Incomplete
@@ -470,7 +473,7 @@ Status: In Progress
 - [x] Totals match transactions.
 - [x] Date validation rejects invalid dates.
 - [x] Edit/delete updates saved transaction data.
-- [ ] Refresh preserves data.
+- [x] Refresh preserves data.
 - [ ] Import does not corrupt data.
 
 ### Gate 2 - Responsive UI
@@ -480,15 +483,15 @@ Status: In Progress
 - [x] Mobile layout works.
 - [x] Tablet layout works.
 - [x] Desktop layout works.
-- [ ] Text does not overflow.
+- [x] Text does not overflow.
 - [ ] Charts remain readable.
 
 ### Gate 3 - Accessibility
 
 Status: In Progress
 
-- [ ] Keyboard navigation works.
-- [ ] Color contrast is acceptable.
+- [x] Keyboard navigation works.
+- [x] Color contrast is acceptable.
 - [ ] Charts include labels/summaries.
 - [x] Buttons and inputs have accessible names.
 - [x] Income/expense are not identified by color only.

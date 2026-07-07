@@ -3,10 +3,10 @@
 import { ArrowDownLeft, ArrowUpRight, CheckCircle2 } from "lucide-react";
 import React from "react";
 import type { FormEvent, ReactNode } from "react";
-import { useMemo, useState } from "react";
-import { defaultCategories } from "@/lib/constants/default-categories";
+import { useEffect, useMemo, useState } from "react";
+import { listCategories, seedDefaultCategories } from "@/lib/db/repositories/categories-repository";
 import { addTransaction } from "@/lib/db/repositories/transactions-repository";
-import type { TransactionType } from "@/lib/types/finance";
+import type { Category, TransactionType } from "@/lib/types/finance";
 import { validateTransactionDraft } from "@/lib/utils/validation";
 
 interface TransactionDraftFormProps {
@@ -23,10 +23,43 @@ export function TransactionDraftForm({ initialType = "expense" }: TransactionDra
   const [errors, setErrors] = useState<string[]>([]);
   const [savedMessage, setSavedMessage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
 
-  const categories = useMemo(
-    () => defaultCategories.filter((category) => category.type === type),
-    [type],
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadCategories() {
+      setIsLoadingCategories(true);
+
+      try {
+        await seedDefaultCategories();
+        const nextCategories = await listCategories();
+
+        if (isMounted) {
+          setCategories(nextCategories);
+        }
+      } catch {
+        if (isMounted) {
+          setErrors(["Categories could not be loaded from this device."]);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoadingCategories(false);
+        }
+      }
+    }
+
+    void loadCategories();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const filteredCategories = useMemo(
+    () => categories.filter((category) => category.type === type),
+    [categories, type],
   );
 
   function handleTypeChange(nextType: TransactionType) {
@@ -116,10 +149,13 @@ export function TransactionDraftForm({ initialType = "expense" }: TransactionDra
           <select
             value={categoryId}
             onChange={(event) => setCategoryId(event.target.value)}
+            disabled={isLoadingCategories}
             className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none"
           >
-            <option value="">Select category</option>
-            {categories.map((category) => (
+            <option value="">
+              {isLoadingCategories ? "Loading categories" : "Select category"}
+            </option>
+            {filteredCategories.map((category) => (
               <option key={category.id} value={category.id}>
                 {category.name}
               </option>

@@ -22,7 +22,7 @@ In Progress
 
 ### Review Status
 
-Phase 0 completed; Phase 1 tracking entry, transaction management, and dashboard summary workflows completed
+Phase 0 completed; Phase 1 MVP personal tracker completed, including tracking entry, transaction management, dashboard summary, and category management workflows
 
 ## 2. Special Prompting Structure
 
@@ -197,7 +197,7 @@ The deep research report identified possible public name collision for TrackPais
 | Overview | Monthly summary and recent activity | Completed | Completed |
 | Add Transaction | Fast income/expense entry | Completed | Completed |
 | Transactions | Search, filter, edit, delete records | Completed | Completed |
-| Categories | Manage income and expense categories | Incomplete | Incomplete |
+| Categories | Manage income and expense categories | Completed | Completed |
 | Reports | Category, period, and trend analytics | Incomplete | Incomplete |
 | Import / Export | Backup, restore, CSV, and JSON movement | Incomplete | Incomplete |
 | Settings | Theme, currency, privacy, reset, AI options later | Incomplete | Incomplete |
