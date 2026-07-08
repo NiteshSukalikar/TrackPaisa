@@ -68,13 +68,15 @@ export function EmptyOverview() {
           </div>
         </article>
 
-        <article className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5">
-          <h3 className="text-lg font-bold">Quick start</h3>
-          <p className="mt-3 text-sm leading-6 text-[var(--muted)]">
-            Save a salary, freelance payment, grocery bill, or any daily expense.
-            The dashboard updates from local records after entries are saved.
-          </p>
-          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+        <article className="flex min-h-full flex-col rounded-lg border border-[var(--border)] bg-[var(--surface)]">
+          <div className="p-5">
+            <h3 className="text-lg font-bold">Quick start</h3>
+            <p className="mt-3 text-sm leading-6 text-[var(--muted)]">
+              Save a salary, freelance payment, grocery bill, or any daily expense.
+              The dashboard updates from local records after entries are saved.
+            </p>
+          </div>
+          <div className="mt-auto grid gap-3 border-t border-[var(--border)] p-5 sm:grid-cols-2">
             <a
               href="/transactions/new?type=income"
               className="inline-flex min-h-11 items-center justify-center rounded-lg bg-[var(--primary)] px-4 text-sm font-bold text-white"

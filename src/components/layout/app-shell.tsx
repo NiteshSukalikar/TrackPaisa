@@ -59,13 +59,18 @@ export function AppShell({
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   useEffect(() => {
-    setIsSidebarCollapsed(window.localStorage.getItem("trackpaisa-sidebar") === "collapsed");
+    setIsSidebarCollapsed(
+      window.localStorage.getItem("trackpaisa-sidebar") === "collapsed",
+    );
   }, []);
 
   function toggleSidebar() {
     setIsSidebarCollapsed((current) => {
       const next = !current;
-      window.localStorage.setItem("trackpaisa-sidebar", next ? "collapsed" : "expanded");
+      window.localStorage.setItem(
+        "trackpaisa-sidebar",
+        next ? "collapsed" : "expanded",
+      );
       return next;
     });
   }
@@ -77,7 +82,9 @@ export function AppShell({
           isSidebarCollapsed ? "w-20" : "w-72"
         }`}
       >
-        <div className={`mb-8 flex items-center gap-3 ${isSidebarCollapsed ? "justify-center" : ""}`}>
+        <div
+          className={`mb-8 flex items-center gap-3 ${isSidebarCollapsed ? "justify-center" : ""}`}
+        >
           <Image
             src="/trackpaisa-logo.svg"
             alt=""
@@ -98,7 +105,9 @@ export function AppShell({
           type="button"
           onClick={toggleSidebar}
           className="mb-5 inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg border border-[var(--border)] text-sm font-bold text-[var(--muted)] hover:bg-[var(--surface-muted)] hover:text-[var(--text)]"
-          aria-label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          aria-label={
+            isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"
+          }
           title={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {isSidebarCollapsed ? (
@@ -117,28 +126,34 @@ export function AppShell({
               key={item.label}
               href={item.href}
               aria-label={isSidebarCollapsed ? item.label : undefined}
-              aria-current={isActivePath(item.href, activePath) ? "page" : undefined}
+              aria-current={
+                isActivePath(item.href, activePath) ? "page" : undefined
+              }
               title={isSidebarCollapsed ? item.label : undefined}
               className={`flex min-h-11 items-center rounded-lg px-3 text-sm font-semibold text-[var(--muted)] transition hover:bg-[var(--surface-muted)] hover:text-[var(--text)] aria-[current=page]:bg-[var(--surface-muted)] aria-[current=page]:text-[var(--text)] ${
                 isSidebarCollapsed ? "justify-center" : "gap-3"
               }`}
             >
               <item.icon aria-hidden="true" size={18} />
-              <span className={isSidebarCollapsed ? "sr-only" : ""}>{item.label}</span>
+              <span className={isSidebarCollapsed ? "sr-only" : ""}>
+                {item.label}
+              </span>
             </a>
           ))}
         </nav>
 
-        <div className={`absolute bottom-6 left-5 right-5 rounded-lg border border-[var(--border)] bg-[var(--bg)] p-4 text-sm text-[var(--muted)] ${isSidebarCollapsed ? "hidden" : ""}`}>
+        {/* <div className={`absolute bottom-6 left-5 right-5 rounded-lg border border-[var(--border)] bg-[var(--bg)] p-4 text-sm text-[var(--muted)] ${isSidebarCollapsed ? "hidden" : ""}`}>
           <p className="font-semibold text-[var(--text)]">Local-first by default</p>
           <p className="mt-2 leading-6">
             No account needed. Your data stays on this device, with export,
             restore, and offline shell support built in.
           </p>
-        </div>
+        </div> */}
       </aside>
 
-      <main className={`pb-[calc(6rem+env(safe-area-inset-bottom))] transition-[margin] duration-200 lg:pb-0 ${isSidebarCollapsed ? "lg:ml-20" : "lg:ml-72"}`}>
+      <main
+        className={`pb-[calc(6rem+env(safe-area-inset-bottom))] transition-[margin] duration-200 lg:pb-0 ${isSidebarCollapsed ? "lg:ml-20" : "lg:ml-72"}`}
+      >
         <header className="sticky top-0 z-10 border-b border-[var(--border)] bg-[var(--bg)]/95 px-4 py-4 backdrop-blur md:px-8">
           <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
             <div className="flex items-center gap-3 lg:hidden">
@@ -170,7 +185,9 @@ export function AppShell({
           <a
             key={item.label}
             href={item.href}
-            aria-current={isActivePath(item.href, activePath) ? "page" : undefined}
+            aria-current={
+              isActivePath(item.href, activePath) ? "page" : undefined
+            }
             className="flex min-h-12 flex-col items-center justify-center gap-1 rounded-lg text-[11px] font-bold text-[var(--muted)] aria-[current=page]:bg-[var(--surface-muted)] aria-[current=page]:text-[var(--text)]"
           >
             <item.icon aria-hidden="true" size={18} />
