@@ -39,16 +39,6 @@ interface Filters {
   walletId: string;
 }
 
-const initialFilters: Filters = {
-  search: "",
-  type: "all",
-  categoryId: "",
-  dateFrom: "",
-  dateTo: "",
-  tag: "",
-  walletId: "",
-};
-
 const defaultWalletOptions = ["Cash", "Bank", "UPI"];
 const predefinedTags = ["monthly", "fixed", "work", "food", "travel", "rent", "salary"];
 const pageSize = 10;
@@ -67,7 +57,7 @@ export function TransactionList() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [wallets, setWallets] = useState<Wallet[]>([]);
-  const [filters, setFilters] = useState<Filters>(initialFilters);
+  const [filters, setFilters] = useState<Filters>(() => buildInitialFilters());
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [actionMessage, setActionMessage] = useState("");
@@ -335,7 +325,7 @@ export function TransactionList() {
           <button
             type="button"
             onClick={() => {
-              setFilters(initialFilters);
+              setFilters(buildInitialFilters());
               setPage(1);
               setOpenActionId(null);
             }}
@@ -975,6 +965,24 @@ function formatTransactionDate(value: string) {
 
 function formatSignedInr(value: number, type: TransactionType) {
   return `${type === "income" ? "+" : "-"}${formatInr(value)}`;
+}
+
+function buildInitialFilters(): Filters {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const monthKey = `${year}-${String(month + 1).padStart(2, "0")}`;
+  const lastDayOfMonth = new Date(year, month + 1, 0).getDate();
+
+  return {
+    search: "",
+    type: "all",
+    categoryId: "",
+    dateFrom: `${monthKey}-01`,
+    dateTo: `${monthKey}-${String(lastDayOfMonth).padStart(2, "0")}`,
+    tag: "",
+    walletId: "",
+  };
 }
 
 function summarizeTransactions(transactions: Transaction[]) {
