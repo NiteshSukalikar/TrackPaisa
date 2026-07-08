@@ -1,7 +1,11 @@
+"use client";
+
 import {
   BarChart3,
   Home,
   ListChecks,
+  Menu,
+  PanelLeftClose,
   Plus,
   Settings,
   Tags,
@@ -9,7 +13,7 @@ import {
   Upload,
 } from "lucide-react";
 import Image from "next/image";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 
@@ -49,13 +53,31 @@ function isActivePath(itemHref: string, activePath: string) {
 export function AppShell({
   activePath = "/",
   children,
-  phaseLabel = "Phase 0",
+  phaseLabel: _phaseLabel = "Phase 0",
   title = "Foundation and app shell",
 }: AppShellProps) {
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+
+  useEffect(() => {
+    setIsSidebarCollapsed(window.localStorage.getItem("trackpaisa-sidebar") === "collapsed");
+  }, []);
+
+  function toggleSidebar() {
+    setIsSidebarCollapsed((current) => {
+      const next = !current;
+      window.localStorage.setItem("trackpaisa-sidebar", next ? "collapsed" : "expanded");
+      return next;
+    });
+  }
+
   return (
     <div className="min-h-screen text-[var(--text)]">
-      <aside className="fixed inset-y-0 left-0 hidden w-72 border-r border-[var(--border)] bg-[var(--surface)] px-5 py-6 lg:block">
-        <div className="mb-8 flex items-center gap-3">
+      <aside
+        className={`fixed inset-y-0 left-0 hidden border-r border-[var(--border)] bg-[var(--surface)] px-4 py-6 transition-[width] duration-200 lg:block ${
+          isSidebarCollapsed ? "w-20" : "w-72"
+        }`}
+      >
+        <div className={`mb-8 flex items-center gap-3 ${isSidebarCollapsed ? "justify-center" : ""}`}>
           <Image
             src="/trackpaisa-logo.svg"
             alt=""
@@ -64,7 +86,7 @@ export function AppShell({
             priority
             className="rounded-lg"
           />
-          <div>
+          <div className={isSidebarCollapsed ? "sr-only" : ""}>
             <p className="text-lg font-bold leading-none">TrackPaisa</p>
             <p className="mt-1 text-xs font-medium text-[var(--muted)]">
               Every rupee, clearly tracked
@@ -72,21 +94,42 @@ export function AppShell({
           </div>
         </div>
 
+        <button
+          type="button"
+          onClick={toggleSidebar}
+          className="mb-5 inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg border border-[var(--border)] text-sm font-bold text-[var(--muted)] hover:bg-[var(--surface-muted)] hover:text-[var(--text)]"
+          aria-label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          title={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          {isSidebarCollapsed ? (
+            <Menu aria-hidden="true" size={18} />
+          ) : (
+            <>
+              <PanelLeftClose aria-hidden="true" size={18} />
+              <span>Collapse</span>
+            </>
+          )}
+        </button>
+
         <nav aria-label="Primary navigation" className="grid gap-1">
           {desktopItems.map((item) => (
             <a
               key={item.label}
               href={item.href}
+              aria-label={isSidebarCollapsed ? item.label : undefined}
               aria-current={isActivePath(item.href, activePath) ? "page" : undefined}
-              className="flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm font-semibold text-[var(--muted)] transition hover:bg-[var(--surface-muted)] hover:text-[var(--text)] aria-[current=page]:bg-[var(--surface-muted)] aria-[current=page]:text-[var(--text)]"
+              title={isSidebarCollapsed ? item.label : undefined}
+              className={`flex min-h-11 items-center rounded-lg px-3 text-sm font-semibold text-[var(--muted)] transition hover:bg-[var(--surface-muted)] hover:text-[var(--text)] aria-[current=page]:bg-[var(--surface-muted)] aria-[current=page]:text-[var(--text)] ${
+                isSidebarCollapsed ? "justify-center" : "gap-3"
+              }`}
             >
               <item.icon aria-hidden="true" size={18} />
-              {item.label}
+              <span className={isSidebarCollapsed ? "sr-only" : ""}>{item.label}</span>
             </a>
           ))}
         </nav>
 
-        <div className="absolute bottom-6 left-5 right-5 rounded-lg border border-[var(--border)] bg-[var(--bg)] p-4 text-sm text-[var(--muted)]">
+        <div className={`absolute bottom-6 left-5 right-5 rounded-lg border border-[var(--border)] bg-[var(--bg)] p-4 text-sm text-[var(--muted)] ${isSidebarCollapsed ? "hidden" : ""}`}>
           <p className="font-semibold text-[var(--text)]">Local-first by default</p>
           <p className="mt-2 leading-6">
             No account needed. Your data stays on this device, with export,
@@ -95,7 +138,7 @@ export function AppShell({
         </div>
       </aside>
 
-      <main className="pb-[calc(6rem+env(safe-area-inset-bottom))] lg:ml-72 lg:pb-0">
+      <main className={`pb-[calc(6rem+env(safe-area-inset-bottom))] transition-[margin] duration-200 lg:pb-0 ${isSidebarCollapsed ? "lg:ml-20" : "lg:ml-72"}`}>
         <header className="sticky top-0 z-10 border-b border-[var(--border)] bg-[var(--bg)]/95 px-4 py-4 backdrop-blur md:px-8">
           <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
             <div className="flex items-center gap-3 lg:hidden">
@@ -110,7 +153,6 @@ export function AppShell({
               <span className="font-bold">TrackPaisa</span>
             </div>
             <div className="hidden lg:block">
-              <p className="text-sm font-medium text-[var(--muted)]">{phaseLabel}</p>
               <h1 className="text-2xl font-bold">{title}</h1>
             </div>
             <ThemeToggle />

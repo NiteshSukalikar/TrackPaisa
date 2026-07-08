@@ -99,17 +99,19 @@ export function SettingsPanel() {
 
   return (
     <div className="grid gap-4">
-      <section className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5">
-        <p className="text-sm font-bold text-[var(--primary)]">Appearance</p>
-        <h2 className="mt-2 text-2xl font-bold">Theme settings</h2>
+      <section className="overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5 sm:p-6">
+        <div className="max-w-3xl">
+          <p className="text-sm font-bold text-[var(--primary)]">Appearance</p>
+          <h2 className="mt-2 text-2xl font-bold">Theme settings</h2>
+        </div>
 
-        <div className="mt-5 grid gap-4 lg:grid-cols-2">
-          <div>
-            <div className="flex items-center gap-2 text-sm font-bold">
+        <div className="mt-6 grid gap-5 xl:grid-cols-[minmax(280px,1fr)_minmax(360px,1.1fr)]">
+          <fieldset className="min-w-0">
+            <legend className="flex items-center gap-2 text-sm font-bold">
               <Sun aria-hidden="true" size={18} />
               <span>Mode</span>
-            </div>
-            <div className="mt-3 grid grid-cols-2 gap-2 rounded-lg border border-[var(--border)] bg-[var(--bg)] p-2">
+            </legend>
+            <div className="mt-3 grid min-h-16 grid-cols-2 gap-2 rounded-lg border border-[var(--border)] bg-[var(--bg)] p-2">
               {(["light", "dark"] as const).map((mode) => (
                 <button
                   key={mode}
@@ -127,14 +129,14 @@ export function SettingsPanel() {
                 </button>
               ))}
             </div>
-          </div>
+          </fieldset>
 
-          <div>
-            <div className="flex items-center gap-2 text-sm font-bold">
+          <fieldset className="min-w-0">
+            <legend className="flex items-center gap-2 text-sm font-bold">
               <Palette aria-hidden="true" size={18} />
               <span>Color theme</span>
-            </div>
-            <div className="mt-3 grid gap-2 sm:grid-cols-2">
+            </legend>
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
               <ColorThemeButton
                 colorTheme="green-blue"
                 isSelected={colorTheme === "green-blue"}
@@ -150,7 +152,7 @@ export function SettingsPanel() {
                 swatches={["#8b5cf6", "#10b981", "#f59e0b"]}
               />
             </div>
-          </div>
+          </fieldset>
         </div>
       </section>
 
@@ -230,7 +232,7 @@ function ColorThemeButton({
       type="button"
       onClick={() => onSelect(colorTheme)}
       aria-pressed={isSelected}
-      className="flex min-h-20 items-center justify-between gap-3 rounded-lg border border-[var(--border)] bg-[var(--bg)] p-3 text-left aria-pressed:border-[var(--primary)] aria-pressed:bg-[var(--surface-muted)]"
+      className="flex min-h-20 w-full items-center justify-between gap-3 rounded-lg border border-[var(--border)] bg-[var(--bg)] p-3 text-left aria-pressed:border-[var(--primary)] aria-pressed:bg-[var(--surface-muted)]"
     >
       <span>
         <span className="block text-sm font-bold text-[var(--text)]">{label}</span>

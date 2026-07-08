@@ -119,7 +119,7 @@ export function ReportsDashboard() {
             <select
               value={period}
               onChange={(event) => updatePeriod(event.target.value as ReportPeriod)}
-              className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none"
+              className="min-h-11 w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none"
             >
               {periodOptions.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -138,7 +138,7 @@ export function ReportsDashboard() {
                 setCustomRange((current) => ({ ...current, from: event.target.value }));
               }}
               type="date"
-              className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none"
+              className="min-h-11 w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none"
             />
           </label>
 
@@ -151,7 +151,7 @@ export function ReportsDashboard() {
                 setCustomRange((current) => ({ ...current, to: event.target.value }));
               }}
               type="date"
-              className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none"
+              className="min-h-11 w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none"
             />
           </label>
         </div>

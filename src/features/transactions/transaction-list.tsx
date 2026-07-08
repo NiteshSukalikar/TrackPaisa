@@ -48,6 +48,9 @@ const initialFilters: Filters = {
   walletId: "",
 };
 
+const defaultWalletOptions = ["Cash", "Bank", "UPI"];
+const predefinedTags = ["monthly", "fixed", "work", "food", "travel", "rent", "salary"];
+
 interface EditDraft {
   type: TransactionType;
   amount: string;
@@ -127,6 +130,20 @@ export function TransactionList() {
     filters.type === "all"
       ? categories
       : categories.filter((category) => category.type === filters.type);
+  const walletOptions = useMemo(
+    () => [...new Set([...wallets.map((wallet) => wallet.name), ...defaultWalletOptions])],
+    [wallets],
+  );
+  const tagOptions = useMemo(
+    () => [
+      ...new Set([
+        ...predefinedTags,
+        ...transactions.flatMap((transaction) => transaction.tags ?? []),
+        ...(filters.tag ? [filters.tag] : []),
+      ]),
+    ],
+    [filters.tag, transactions],
+  );
 
   function updateFilter<Key extends keyof Filters>(key: Key, value: Filters[Key]) {
     setFilters((current) => ({
@@ -260,14 +277,23 @@ export function TransactionList() {
         </a>
       </div>
 
-      <form className="grid gap-4 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
-        <div className="flex items-center gap-2 text-sm font-bold">
-          <SlidersHorizontal aria-hidden="true" size={18} />
-          Filters
+      <form className="grid gap-4 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2 text-sm font-bold">
+            <SlidersHorizontal aria-hidden="true" size={18} />
+            Filters
+          </div>
+          <button
+            type="button"
+            onClick={() => setFilters(initialFilters)}
+            className="inline-flex min-h-10 items-center justify-center rounded-lg border border-[var(--border)] px-3 text-xs font-bold text-[var(--muted)] hover:bg-[var(--surface-muted)] hover:text-[var(--text)]"
+          >
+            Reset
+          </button>
         </div>
 
-        <div className="grid gap-4 lg:grid-cols-[1.4fr_0.8fr_1fr_0.8fr_0.8fr]">
-          <label className="grid gap-2 text-sm font-bold">
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-12">
+          <label className="grid gap-2 text-sm font-bold xl:col-span-3">
             Search
             <span className="relative">
               <Search
@@ -284,7 +310,7 @@ export function TransactionList() {
             </span>
           </label>
 
-          <label className="grid gap-2 text-sm font-bold">
+          <label className="grid gap-2 text-sm font-bold xl:col-span-2">
             Type
             <select
               value={filters.type}
@@ -297,7 +323,7 @@ export function TransactionList() {
             </select>
           </label>
 
-          <label className="grid gap-2 text-sm font-bold">
+          <label className="grid gap-2 text-sm font-bold xl:col-span-3">
             Category
             <select
               value={filters.categoryId}
@@ -313,7 +339,7 @@ export function TransactionList() {
             </select>
           </label>
 
-          <label className="grid gap-2 text-sm font-bold">
+          <label className="grid gap-2 text-sm font-bold xl:col-span-2">
             From
             <input
               value={filters.dateFrom}
@@ -323,7 +349,7 @@ export function TransactionList() {
             />
           </label>
 
-          <label className="grid gap-2 text-sm font-bold">
+          <label className="grid gap-2 text-sm font-bold xl:col-span-2">
             To
             <input
               value={filters.dateTo}
@@ -332,10 +358,7 @@ export function TransactionList() {
               className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none"
             />
           </label>
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-2">
-          <label className="grid gap-2 text-sm font-bold">
+          <label className="grid gap-2 text-sm font-bold xl:col-span-6">
             Wallet / Source
             <select
               value={filters.walletId}
@@ -343,22 +366,28 @@ export function TransactionList() {
               className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none"
             >
               <option value="">All wallets</option>
-              {wallets.map((wallet) => (
-                <option key={wallet.id} value={wallet.name}>
-                  {wallet.name}
+              {walletOptions.map((walletName) => (
+                <option key={walletName} value={walletName}>
+                  {walletName}
                 </option>
               ))}
             </select>
           </label>
 
-          <label className="grid gap-2 text-sm font-bold">
+          <label className="grid gap-2 text-sm font-bold xl:col-span-6">
             Tag
-            <input
+            <select
               value={filters.tag}
               onChange={(event) => updateFilter("tag", event.target.value)}
-              placeholder="monthly"
               className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none"
-            />
+            >
+              <option value="">All tags</option>
+              {tagOptions.map((tag) => (
+                <option key={tag} value={tag}>
+                  {tag}
+                </option>
+              ))}
+            </select>
           </label>
         </div>
       </form>
@@ -409,6 +438,7 @@ export function TransactionList() {
                 transaction={transaction}
                 category={categoriesById.get(transaction.categoryId)}
                 categories={categories}
+                walletOptions={walletOptions}
                 isEditing={editingId === transaction.id}
                 editDraft={editingId === transaction.id ? editDraft : null}
                 pendingActionId={pendingActionId}
@@ -431,6 +461,7 @@ function TransactionRow({
   transaction,
   category,
   categories,
+  walletOptions,
   isEditing,
   editDraft,
   pendingActionId,
@@ -444,6 +475,7 @@ function TransactionRow({
   transaction: Transaction;
   category?: Category;
   categories: Category[];
+  walletOptions: string[];
   isEditing: boolean;
   editDraft: EditDraft | null;
   pendingActionId: string | null;
@@ -490,7 +522,7 @@ function TransactionRow({
           </div>
           <p className="mt-1 text-sm text-[var(--muted)]">
             {formatTransactionDate(transaction.date)}
-            {transaction.walletId ? ` • ${transaction.walletId}` : ""}
+            {transaction.walletId ? ` - ${transaction.walletId}` : ""}
           </p>
           {transaction.note ? (
             <p className="mt-2 break-words text-sm leading-6">{transaction.note}</p>
@@ -600,11 +632,18 @@ function TransactionRow({
 
             <label className="grid gap-2 text-sm font-bold">
               Edit wallet / source
-              <input
+              <select
                 value={editDraft.walletId}
                 onChange={(event) => updateDraft("walletId", event.target.value)}
                 className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 text-base outline-none"
-              />
+              >
+                <option value="">No wallet</option>
+                {walletOptions.map((walletName) => (
+                  <option key={walletName} value={walletName}>
+                    {walletName}
+                  </option>
+                ))}
+              </select>
             </label>
 
             <label className="grid gap-2 text-sm font-bold">

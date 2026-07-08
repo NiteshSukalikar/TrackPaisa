@@ -200,11 +200,11 @@ export function AdvancedTrackingManager() {
           <Header icon={Landmark} title="Wallets / sources" />
           <label className="grid gap-2 text-sm font-bold">
             Name
-            <input value={walletName} onChange={(event) => setWalletName(event.target.value)} className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none" />
+            <input value={walletName} onChange={(event) => setWalletName(event.target.value)} className="min-h-11 w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none" />
           </label>
           <label className="grid gap-2 text-sm font-bold">
             Type
-            <select value={walletType} onChange={(event) => setWalletType(event.target.value as Wallet["type"])} className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none">
+            <select value={walletType} onChange={(event) => setWalletType(event.target.value as Wallet["type"])} className="min-h-11 w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none">
               <option value="cash">Cash</option>
               <option value="bank">Bank</option>
               <option value="upi">UPI</option>
@@ -226,18 +226,18 @@ export function AdvancedTrackingManager() {
           <Header icon={PiggyBank} title="Category budgets" />
           <label className="grid gap-2 text-sm font-bold">
             Month
-            <input value={budgetMonth} onChange={(event) => setBudgetMonth(event.target.value)} type="month" className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none" />
+            <input value={budgetMonth} onChange={(event) => setBudgetMonth(event.target.value)} type="month" className="min-h-11 w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none" />
           </label>
           <label className="grid gap-2 text-sm font-bold">
             Category
-            <select value={budgetCategoryId} onChange={(event) => setBudgetCategoryId(event.target.value)} className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none">
+            <select value={budgetCategoryId} onChange={(event) => setBudgetCategoryId(event.target.value)} className="min-h-11 w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none">
               <option value="">Select expense category</option>
               {expenseCategories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
             </select>
           </label>
           <label className="grid gap-2 text-sm font-bold">
             Limit
-            <input value={budgetAmount} onChange={(event) => setBudgetAmount(event.target.value)} inputMode="decimal" className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none" />
+            <input value={budgetAmount} onChange={(event) => setBudgetAmount(event.target.value)} inputMode="decimal" className="min-h-11 w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none" />
           </label>
           <button type="submit" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[var(--primary)] px-4 text-sm font-bold text-white">
             <Plus aria-hidden="true" size={17} />
@@ -260,19 +260,19 @@ export function AdvancedTrackingManager() {
           <div className="grid gap-3 sm:grid-cols-2">
             <label className="grid gap-2 text-sm font-bold">
               Type
-              <select value={templateType} onChange={(event) => { setTemplateType(event.target.value as TransactionType); setTemplateCategoryId(""); }} className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none">
+              <select value={templateType} onChange={(event) => { setTemplateType(event.target.value as TransactionType); setTemplateCategoryId(""); }} className="min-h-11 w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none">
                 <option value="expense">Expense</option>
                 <option value="income">Income</option>
               </select>
             </label>
             <label className="grid gap-2 text-sm font-bold">
               Amount
-              <input value={templateAmount} onChange={(event) => setTemplateAmount(event.target.value)} inputMode="decimal" className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none" />
+              <input value={templateAmount} onChange={(event) => setTemplateAmount(event.target.value)} inputMode="decimal" className="min-h-11 w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none" />
             </label>
           </div>
           <label className="grid gap-2 text-sm font-bold">
             Category
-            <select value={templateCategoryId} onChange={(event) => setTemplateCategoryId(event.target.value)} className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none">
+            <select value={templateCategoryId} onChange={(event) => setTemplateCategoryId(event.target.value)} className="min-h-11 w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none">
               <option value="">Select category</option>
               {templateCategories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
             </select>
@@ -280,30 +280,30 @@ export function AdvancedTrackingManager() {
           <div className="grid gap-3 sm:grid-cols-2">
             <label className="grid gap-2 text-sm font-bold">
               Frequency
-              <select value={templateFrequency} onChange={(event) => setTemplateFrequency(event.target.value as RecurringTemplate["frequency"])} className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none">
+              <select value={templateFrequency} onChange={(event) => setTemplateFrequency(event.target.value as RecurringTemplate["frequency"])} className="min-h-11 w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none">
                 <option value="monthly">Monthly</option>
                 <option value="weekly">Weekly</option>
               </select>
             </label>
             <label className="grid gap-2 text-sm font-bold">
               Next date
-              <input value={templateNextDate} onChange={(event) => setTemplateNextDate(event.target.value)} type="date" className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none" />
+              <input value={templateNextDate} onChange={(event) => setTemplateNextDate(event.target.value)} type="date" className="min-h-11 w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none" />
             </label>
           </div>
           <label className="grid gap-2 text-sm font-bold">
             Wallet / Source
-            <select value={templateWalletId} onChange={(event) => setTemplateWalletId(event.target.value)} className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none">
+            <select value={templateWalletId} onChange={(event) => setTemplateWalletId(event.target.value)} className="min-h-11 w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none">
               <option value="">No wallet</option>
               {wallets.map((wallet) => <option key={wallet.id} value={wallet.name}>{wallet.name}</option>)}
             </select>
           </label>
           <label className="grid gap-2 text-sm font-bold">
             Note
-            <input value={templateNote} onChange={(event) => setTemplateNote(event.target.value)} className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none" />
+            <input value={templateNote} onChange={(event) => setTemplateNote(event.target.value)} className="min-h-11 w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none" />
           </label>
           <label className="grid gap-2 text-sm font-bold">
             Tags
-            <input value={templateTags} onChange={(event) => setTemplateTags(event.target.value)} placeholder="fixed, monthly" className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none" />
+            <input value={templateTags} onChange={(event) => setTemplateTags(event.target.value)} placeholder="fixed, monthly" className="min-h-11 w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none" />
           </label>
           <button type="submit" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[var(--primary)] px-4 text-sm font-bold text-white">
             <Plus aria-hidden="true" size={17} />

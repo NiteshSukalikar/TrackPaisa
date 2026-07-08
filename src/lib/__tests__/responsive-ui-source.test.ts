@@ -2,7 +2,9 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 const globalsCss = readFileSync("src/app/globals.css", "utf8");
+const advancedTrackingManager = readFileSync("src/features/advanced/advanced-tracking-manager.tsx", "utf8");
 const appShell = readFileSync("src/components/layout/app-shell.tsx", "utf8");
+const reportsDashboard = readFileSync("src/features/reports/reports-dashboard.tsx", "utf8");
 const rootLayout = readFileSync("src/app/layout.tsx", "utf8");
 
 describe("responsive UI source invariants", () => {
@@ -12,6 +14,7 @@ describe("responsive UI source invariants", () => {
     expect(globalsCss).toContain("min-width: 44px");
     expect(globalsCss).toContain("min-height: 44px");
     expect(globalsCss).toContain("accent-color: var(--primary)");
+    expect(globalsCss).toContain("width: 100%");
     expect(globalsCss).toContain("max-width: 100%");
     expect(globalsCss).not.toContain("input[type=\"date\"]");
     expect(globalsCss).not.toContain("input[type=\"month\"]");
@@ -35,5 +38,10 @@ describe("responsive UI source invariants", () => {
     expect(globalsCss).toContain("--success-bg");
     expect(globalsCss).not.toContain("bg-red-50");
     expect(globalsCss).not.toContain("bg-green-50");
+  });
+
+  it("keeps dense advanced and report form controls full width", () => {
+    expect(advancedTrackingManager).toContain("min-h-11 w-full");
+    expect(reportsDashboard).toContain("min-h-11 w-full");
   });
 });

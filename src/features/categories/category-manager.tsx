@@ -211,19 +211,19 @@ export function CategoryManager() {
 
       <form
         onSubmit={addCategory}
-        className="grid gap-4 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4"
+        className="grid gap-4 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-5"
       >
         <div className="flex items-center gap-2 text-sm font-bold">
           <Plus aria-hidden="true" size={18} />
           Add category
         </div>
 
-        <div className="grid gap-4 lg:grid-cols-[1fr_0.8fr_0.8fr_0.8fr_auto] lg:items-end">
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-[minmax(220px,1.4fr)_minmax(150px,0.75fr)_minmax(170px,0.85fr)_minmax(190px,1fr)_auto] xl:items-end">
           <CategoryDraftFields draft={draft} onChange={setDraft} nameLabel="Name" />
           <button
             type="submit"
             disabled={pendingActionId === "add"}
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[var(--primary)] px-4 text-sm font-bold text-white disabled:opacity-60"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[var(--primary)] px-5 text-sm font-bold text-white disabled:opacity-60 md:col-span-2 xl:col-span-1 xl:min-w-24"
           >
             <Plus aria-hidden="true" size={17} />
             {pendingActionId === "add" ? "Adding..." : "Add"}
@@ -427,7 +427,7 @@ function CategoryRow({
             onSaveEdit(category);
           }}
         >
-          <div className="grid gap-4 lg:grid-cols-4">
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
             <CategoryDraftFields draft={editDraft} onChange={onDraftChange} nameLabel="Edit name" />
           </div>
           <div className="flex flex-wrap gap-2">
@@ -475,7 +475,7 @@ function CategoryDraftFields({
           value={draft.name}
           onChange={(event) => updateDraft("name", event.target.value)}
           placeholder="Groceries"
-          className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none"
+          className="min-h-11 w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none"
         />
       </label>
 
@@ -484,7 +484,7 @@ function CategoryDraftFields({
         <select
           value={draft.type}
           onChange={(event) => updateDraft("type", event.target.value as TransactionType)}
-          className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none"
+          className="min-h-11 w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none"
         >
           <option value="expense">Expense</option>
           <option value="income">Income</option>
@@ -496,7 +496,7 @@ function CategoryDraftFields({
         <select
           value={draft.icon}
           onChange={(event) => updateDraft("icon", event.target.value)}
-          className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none"
+          className="min-h-11 w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none"
         >
           {iconOptions.map((icon) => (
             <option key={icon} value={icon}>
@@ -508,7 +508,7 @@ function CategoryDraftFields({
 
       <label className="grid gap-2 text-sm font-bold">
         Color
-        <span className="flex min-h-11 items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3">
+        <span className="flex min-h-11 w-full items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3">
           <span
             aria-hidden="true"
             className="h-5 w-5 rounded-full border border-[var(--border)]"

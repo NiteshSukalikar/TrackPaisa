@@ -14,6 +14,9 @@ interface TransactionDraftFormProps {
   initialType?: TransactionType;
 }
 
+const defaultWalletOptions = ["Cash", "Bank", "UPI"];
+const predefinedTags = ["monthly", "fixed", "work", "food", "travel", "rent", "salary"];
+
 export function TransactionDraftForm({ initialType = "expense" }: TransactionDraftFormProps) {
   const [type, setType] = useState<TransactionType>(initialType);
   const [amount, setAmount] = useState("");
@@ -65,11 +68,24 @@ export function TransactionDraftForm({ initialType = "expense" }: TransactionDra
     () => categories.filter((category) => category.type === type),
     [categories, type],
   );
+  const walletOptions = useMemo(
+    () => [...new Set([...wallets.map((wallet) => wallet.name), ...defaultWalletOptions])],
+    [wallets],
+  );
 
   function handleTypeChange(nextType: TransactionType) {
     setType(nextType);
     setCategoryId("");
     setSavedMessage("");
+  }
+
+  function toggleTag(tag: string) {
+    const currentTags = parseTags(tagsText);
+    const nextTags = currentTags.includes(tag)
+      ? currentTags.filter((currentTag) => currentTag !== tag)
+      : [...currentTags, tag];
+
+    setTagsText(nextTags.join(", "));
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -181,30 +197,48 @@ export function TransactionDraftForm({ initialType = "expense" }: TransactionDra
 
         <label className="grid gap-2 text-sm font-bold">
           Wallet / Source
-          <input
+          <select
             value={walletId}
             onChange={(event) => setWalletId(event.target.value)}
-            list="wallet-options"
-            placeholder="Cash, Bank, UPI"
             className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none"
-          />
-          <datalist id="wallet-options">
-            {wallets.map((wallet) => (
-              <option key={wallet.id} value={wallet.name} />
+          >
+            <option value="">Select wallet or source</option>
+            {walletOptions.map((walletName) => (
+              <option key={walletName} value={walletName}>
+                {walletName}
+              </option>
             ))}
-          </datalist>
+          </select>
         </label>
       </div>
 
-      <label className="grid gap-2 text-sm font-bold">
-        Tags
+      <div className="grid gap-2 text-sm font-bold">
+        <span>Tags</span>
+        <div className="flex flex-wrap gap-2">
+          {predefinedTags.map((tag) => {
+            const isSelected = parseTags(tagsText).includes(tag);
+
+            return (
+              <button
+                key={tag}
+                type="button"
+                onClick={() => toggleTag(tag)}
+                aria-pressed={isSelected}
+                className="inline-flex min-h-9 items-center justify-center rounded-lg border border-[var(--border)] px-3 text-xs font-bold text-[var(--muted)] aria-pressed:border-[var(--primary)] aria-pressed:bg-[var(--surface-muted)] aria-pressed:text-[var(--text)]"
+              >
+                #{tag}
+              </button>
+            );
+          })}
+        </div>
         <input
+          aria-label="Tags"
           value={tagsText}
           onChange={(event) => setTagsText(event.target.value)}
-          placeholder="monthly, work, fixed"
+          placeholder="Add custom tags separated by commas"
           className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none"
         />
-      </label>
+      </div>
 
       <label className="grid gap-2 text-sm font-bold">
         Note

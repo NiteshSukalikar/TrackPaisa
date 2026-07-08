@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AppShell } from "@/components/layout/app-shell";
@@ -34,5 +34,23 @@ describe("AppShell responsive layout contract", () => {
     expect(screen.getByRole("link", { name: "List" })).toHaveAttribute("aria-current", "page");
     expect(screen.getByRole("button", { name: "Switch to dark mode" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Switch to colorful theme" })).toBeInTheDocument();
+  });
+
+  it("keeps sidebar state separate from appearance state", () => {
+    window.localStorage.setItem("trackpaisa-theme", "light");
+    document.documentElement.dataset.theme = "light";
+
+    render(
+      <AppShell activePath="/" title="Overview">
+        <p>Screen content</p>
+      </AppShell>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Collapse sidebar" }));
+
+    expect(window.localStorage.getItem("trackpaisa-sidebar")).toBe("collapsed");
+    expect(window.localStorage.getItem("trackpaisa-theme")).toBe("light");
+    expect(document.documentElement.dataset.theme).toBe("light");
+    expect(screen.getByRole("button", { name: "Expand sidebar" })).toBeInTheDocument();
   });
 });

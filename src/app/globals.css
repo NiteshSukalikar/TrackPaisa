@@ -102,6 +102,7 @@ button {
 input:not([type="file"]),
 select,
 textarea {
+  width: 100%;
   max-width: 100%;
   min-height: 44px;
   border-radius: 0.5rem;
