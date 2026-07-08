@@ -13,7 +13,8 @@ import {
   Upload,
 } from "lucide-react";
 import Image from "next/image";
-import React, { useEffect, useState } from "react";
+import Link from "next/link";
+import React, { useState } from "react";
 import type { ReactNode } from "react";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 
@@ -56,13 +57,11 @@ export function AppShell({
   phaseLabel: _phaseLabel = "Phase 0",
   title = "Foundation and app shell",
 }: AppShellProps) {
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-
-  useEffect(() => {
-    setIsSidebarCollapsed(
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(
+    () =>
+      typeof window !== "undefined" &&
       window.localStorage.getItem("trackpaisa-sidebar") === "collapsed",
-    );
-  }, []);
+  );
 
   function toggleSidebar() {
     setIsSidebarCollapsed((current) => {
@@ -78,7 +77,7 @@ export function AppShell({
   return (
     <div className="min-h-screen text-[var(--text)]">
       <aside
-        className={`fixed inset-y-0 left-0 hidden border-r border-[var(--border)] bg-[var(--surface)] px-4 py-6 transition-[width] duration-200 lg:block ${
+        className={`fixed inset-y-0 left-0 hidden border-r border-[var(--border)] bg-[var(--surface)]/92 px-4 py-6 shadow-[8px_0_32px_rgb(15_23_42_/_0.04)] backdrop-blur-xl transition-[width] duration-200 lg:block ${
           isSidebarCollapsed ? "w-20" : "w-72"
         }`}
       >
@@ -94,8 +93,8 @@ export function AppShell({
             className="rounded-lg"
           />
           <div className={isSidebarCollapsed ? "sr-only" : ""}>
-            <p className="text-lg font-bold leading-none">TrackPaisa</p>
-            <p className="mt-1 text-xs font-medium text-[var(--muted)]">
+            <p className="text-lg font-extrabold leading-none tracking-[-0.02em]">TrackPaisa</p>
+            <p className="mt-1 text-xs font-semibold text-[var(--muted)]">
               Every rupee, clearly tracked
             </p>
           </div>
@@ -104,7 +103,7 @@ export function AppShell({
         <button
           type="button"
           onClick={toggleSidebar}
-          className="mb-5 inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg border border-[var(--border)] text-sm font-bold text-[var(--muted)] hover:bg-[var(--surface-muted)] hover:text-[var(--text)]"
+          className="secondary-action mb-5 h-11 w-full px-3 text-[var(--muted)]"
           aria-label={
             isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"
           }
@@ -122,15 +121,16 @@ export function AppShell({
 
         <nav aria-label="Primary navigation" className="grid gap-1">
           {desktopItems.map((item) => (
-            <a
+            <Link
               key={item.label}
               href={item.href}
+              prefetch
               aria-label={isSidebarCollapsed ? item.label : undefined}
               aria-current={
                 isActivePath(item.href, activePath) ? "page" : undefined
               }
               title={isSidebarCollapsed ? item.label : undefined}
-              className={`flex min-h-11 items-center rounded-lg px-3 text-sm font-semibold text-[var(--muted)] transition hover:bg-[var(--surface-muted)] hover:text-[var(--text)] aria-[current=page]:bg-[var(--surface-muted)] aria-[current=page]:text-[var(--text)] ${
+              className={`flex min-h-11 items-center rounded-lg px-3 text-sm font-bold text-[var(--muted)] transition hover:bg-[var(--surface-muted)] hover:text-[var(--text)] aria-[current=page]:bg-[var(--surface-muted)] aria-[current=page]:text-[var(--primary)] aria-[current=page]:shadow-sm ${
                 isSidebarCollapsed ? "justify-center" : "gap-3"
               }`}
             >
@@ -138,7 +138,7 @@ export function AppShell({
               <span className={isSidebarCollapsed ? "sr-only" : ""}>
                 {item.label}
               </span>
-            </a>
+            </Link>
           ))}
         </nav>
 
@@ -152,9 +152,9 @@ export function AppShell({
       </aside>
 
       <main
-        className={`pb-[calc(6rem+env(safe-area-inset-bottom))] transition-[margin] duration-200 lg:pb-0 ${isSidebarCollapsed ? "lg:ml-20" : "lg:ml-72"}`}
+        className={`pb-[calc(7.5rem+env(safe-area-inset-bottom))] transition-[margin] duration-200 lg:pb-0 ${isSidebarCollapsed ? "lg:ml-20" : "lg:ml-72"}`}
       >
-        <header className="sticky top-0 z-10 border-b border-[var(--border)] bg-[var(--bg)]/95 px-4 py-4 backdrop-blur md:px-8">
+        <header className="sticky top-0 z-10 border-b border-[var(--border)] bg-[var(--bg)]/82 px-4 py-4 backdrop-blur-xl md:px-8">
           <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
             <div className="flex items-center gap-3 lg:hidden">
               <Image
@@ -165,36 +165,39 @@ export function AppShell({
                 priority
                 className="rounded-lg"
               />
-              <span className="font-bold">TrackPaisa</span>
+              <span className="font-extrabold tracking-[-0.02em]">TrackPaisa</span>
             </div>
             <div className="hidden lg:block">
-              <h1 className="text-2xl font-bold">{title}</h1>
+              <h1 className="text-2xl font-extrabold tracking-[-0.02em]">{title}</h1>
             </div>
             <ThemeToggle />
           </div>
         </header>
 
-        <div className="mx-auto max-w-6xl px-4 py-6 md:px-8">{children}</div>
+        <div className="mx-auto max-w-6xl px-4 py-6 md:px-8 md:py-8">{children}</div>
       </main>
 
-      <nav
-        aria-label="Mobile navigation"
-        className="fixed inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-20 grid grid-cols-5 gap-1 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-2 shadow-soft lg:hidden"
-      >
-        {mobileItems.map((item) => (
-          <a
-            key={item.label}
-            href={item.href}
-            aria-current={
-              isActivePath(item.href, activePath) ? "page" : undefined
-            }
-            className="flex min-h-12 flex-col items-center justify-center gap-1 rounded-lg text-[11px] font-bold text-[var(--muted)] aria-[current=page]:bg-[var(--surface-muted)] aria-[current=page]:text-[var(--text)]"
-          >
-            <item.icon aria-hidden="true" size={18} />
-            {item.label}
-          </a>
-        ))}
-      </nav>
+      <div className="fixed inset-x-0 bottom-0 z-20 border-t border-[var(--border)] bg-[var(--surface)]/94 px-3 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 shadow-soft backdrop-blur-xl lg:hidden">
+        <nav
+          aria-label="Mobile navigation"
+          className="grid grid-cols-5 gap-1"
+        >
+          {mobileItems.map((item) => (
+            <Link
+              key={item.label}
+              href={item.href}
+              prefetch
+              aria-current={
+                isActivePath(item.href, activePath) ? "page" : undefined
+              }
+              className="flex min-h-12 flex-col items-center justify-center gap-1 rounded-lg text-[11px] font-extrabold text-[var(--muted)] transition aria-[current=page]:bg-[var(--surface-muted)] aria-[current=page]:text-[var(--primary)]"
+            >
+              <item.icon aria-hidden="true" size={18} />
+              {item.label}
+            </Link>
+          ))}
+        </nav>
+      </div>
     </div>
   );
 }

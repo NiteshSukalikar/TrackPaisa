@@ -11,11 +11,11 @@ const stats = [
 
 export function EmptyOverview() {
   return (
-    <div className="grid gap-6">
-      <section className="grid gap-4 md:grid-cols-[1.4fr_0.8fr]">
+    <div className="page-stack">
+      <section className="page-hero grid gap-4 md:grid-cols-[1.4fr_0.8fr]">
         <div>
-          <p className="text-sm font-bold text-[var(--primary)]">Track every rupee, without the clutter.</p>
-          <h2 className="mt-3 max-w-2xl text-3xl font-bold leading-tight md:text-4xl">
+          <p className="eyebrow">Track every rupee, without the clutter.</p>
+          <h2 className="heading-xl max-w-2xl">
             Your local-first money journal is ready for your first entry.
           </h2>
           <p className="mt-4 max-w-2xl text-base leading-7 text-[var(--muted)]">
@@ -23,8 +23,8 @@ export function EmptyOverview() {
             with savings, recent activity, and category spending.
           </p>
         </div>
-        <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5">
-          <p className="text-sm font-bold text-[var(--text)]">Privacy baseline</p>
+        <div className="quiet-card p-5">
+          <p className="text-sm font-extrabold text-[var(--text)]">Privacy baseline</p>
           <ul className="mt-4 grid gap-3 text-sm leading-6 text-[var(--muted)]">
             <li>No required login.</li>
             <li>No backend database.</li>
@@ -38,21 +38,21 @@ export function EmptyOverview() {
         {stats.map((stat) => (
           <article
             key={stat.label}
-            className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5"
+            className="stat-card"
           >
             <div className="flex items-center justify-between gap-3">
-              <span className="text-sm font-bold text-[var(--muted)]">{stat.label}</span>
+              <span className="text-sm font-extrabold text-[var(--muted)]">{stat.label}</span>
               <stat.icon aria-hidden="true" size={20} className="text-[var(--accent)]" />
             </div>
-            <p className="mt-4 text-2xl font-bold">{stat.value}</p>
+            <p className="mt-4 text-2xl font-extrabold tracking-[-0.02em]">{stat.value}</p>
             <p className="mt-2 text-sm leading-6 text-[var(--muted)]">{stat.detail}</p>
           </article>
         ))}
       </section>
 
       <section className="grid gap-4 lg:grid-cols-2">
-        <article className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5">
-          <h3 className="text-lg font-bold">Ready on this device</h3>
+        <article className="section-card">
+          <h3 className="text-lg font-extrabold">Ready on this device</h3>
           <div className="mt-4 grid gap-3 text-sm text-[var(--muted)]">
             {[
               "Income and expense entry",
@@ -61,16 +61,16 @@ export function EmptyOverview() {
               "Local IndexedDB storage",
               "Responsive mobile and desktop layout",
             ].map((item) => (
-              <p key={item} className="rounded-lg bg-[var(--surface-muted)] px-3 py-2">
+              <p key={item} className="rounded-lg bg-[var(--surface-muted)] px-3 py-2 font-semibold">
                 {item}
               </p>
             ))}
           </div>
         </article>
 
-        <article className="flex min-h-full flex-col rounded-lg border border-[var(--border)] bg-[var(--surface)]">
+        <article className="premium-card flex min-h-full flex-col">
           <div className="p-5">
-            <h3 className="text-lg font-bold">Quick start</h3>
+            <h3 className="text-lg font-extrabold">Quick start</h3>
             <p className="mt-3 text-sm leading-6 text-[var(--muted)]">
               Save a salary, freelance payment, grocery bill, or any daily expense.
               The dashboard updates from local records after entries are saved.
@@ -79,13 +79,13 @@ export function EmptyOverview() {
           <div className="mt-auto grid gap-3 border-t border-[var(--border)] p-5 sm:grid-cols-2">
             <a
               href="/transactions/new?type=income"
-              className="inline-flex min-h-11 items-center justify-center rounded-lg bg-[var(--primary)] px-4 text-sm font-bold text-white"
+              className="primary-action"
             >
               Add income
             </a>
             <a
               href="/transactions/new?type=expense"
-              className="inline-flex min-h-11 items-center justify-center rounded-lg border border-[var(--border)] px-4 text-sm font-bold text-[var(--text)]"
+              className="secondary-action"
             >
               Add expense
             </a>

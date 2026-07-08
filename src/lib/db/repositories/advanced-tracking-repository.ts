@@ -63,6 +63,37 @@ export async function saveWallet(draft: WalletDraft, idFactory: IdFactory = crea
   return wallet;
 }
 
+export async function updateWallet(id: string, draft: WalletDraft) {
+  const existing = await getTrackPaisaDb().wallets.get(id);
+
+  if (!existing) {
+    throw new Error("Wallet could not be found.");
+  }
+
+  const name = draft.name.trim();
+
+  if (!name) {
+    throw new Error("Wallet name is required.");
+  }
+
+  if (!["cash", "bank", "upi", "other"].includes(draft.type)) {
+    throw new Error("Wallet type is required.");
+  }
+
+  const wallet: Wallet = {
+    ...existing,
+    name,
+    type: draft.type,
+    ...(typeof draft.openingBalance === "number" && Number.isFinite(draft.openingBalance)
+      ? { openingBalance: draft.openingBalance }
+      : {}),
+  };
+
+  await getTrackPaisaDb().wallets.put(wallet);
+
+  return wallet;
+}
+
 export async function deleteWallet(id: string) {
   await getTrackPaisaDb().wallets.delete(id);
 }
@@ -125,6 +156,23 @@ export async function saveRecurringTemplate(
 ) {
   const template = createRecurringTemplate(draft, new Date(), idFactory);
   await getTrackPaisaDb().recurringTemplates.add(template);
+
+  return template;
+}
+
+export async function updateRecurringTemplate(id: string, draft: RecurringTemplateDraft) {
+  const existing = await getTrackPaisaDb().recurringTemplates.get(id);
+
+  if (!existing) {
+    throw new Error("Template could not be found.");
+  }
+
+  const template = {
+    ...createRecurringTemplate(draft, new Date(), () => id),
+    createdAt: existing.createdAt,
+  };
+
+  await getTrackPaisaDb().recurringTemplates.put(template);
 
   return template;
 }

@@ -115,8 +115,8 @@ describe("TransactionList", () => {
     expect(screen.getByText("July salary")).toBeInTheDocument();
     expect(screen.getAllByText(/UPI/).length).toBeGreaterThan(0);
     expect(screen.getByText("#food")).toBeInTheDocument();
-    expect(screen.getByText("+₹90,000")).toBeInTheDocument();
-    expect(screen.getByText("-₹450")).toBeInTheDocument();
+    expect(screen.getAllByText("+₹90,000").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("-₹450").length).toBeGreaterThan(0);
   });
 
   it("reloads through the repository when filters change", async () => {
@@ -154,6 +154,7 @@ describe("TransactionList", () => {
 
     await screen.findByText("Dinner");
 
+    fireEvent.click(screen.getByRole("button", { name: "Open actions for Dinner transaction" }));
     fireEvent.click(screen.getByRole("button", { name: "Edit Dinner transaction" }));
     fireEvent.change(screen.getByLabelText("Edit amount"), { target: { value: "500" } });
     fireEvent.change(screen.getByLabelText("Edit note"), { target: { value: " Dinner with tip " } });
@@ -181,6 +182,7 @@ describe("TransactionList", () => {
 
     await screen.findByText("Dinner");
 
+    fireEvent.click(screen.getByRole("button", { name: "Open actions for Dinner transaction" }));
     fireEvent.click(screen.getByRole("button", { name: "Delete Dinner transaction" }));
 
     await waitFor(() => {
@@ -198,6 +200,7 @@ describe("TransactionList", () => {
 
     await screen.findByText("Dinner");
 
+    fireEvent.click(screen.getByRole("button", { name: "Open actions for Dinner transaction" }));
     fireEvent.click(screen.getByRole("button", { name: "Clone Dinner transaction" }));
 
     await waitFor(() => {

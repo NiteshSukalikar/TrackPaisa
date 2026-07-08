@@ -124,19 +124,19 @@ export function ImportExportManager() {
   }
 
   return (
-    <section className="grid gap-5">
-      <div className="flex flex-col justify-between gap-3 md:flex-row md:items-end">
+    <section className="page-stack">
+      <div className="page-hero">
         <div>
-          <p className="text-sm font-bold text-[var(--primary)]">Data portability</p>
-          <h2 className="mt-2 text-2xl font-bold">Back up and restore</h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--muted)]">
+          <p className="eyebrow">Data portability</p>
+          <h2 className="heading-lg">Back up and restore</h2>
+          <p className="copy">
             Export a full JSON backup or restore one from another device. Imports validate the file and save a safety backup first.
           </p>
         </div>
       </div>
 
       {error ? (
-        <div role="alert" className="flex gap-2 rounded-lg border border-[var(--danger-border)] bg-[var(--danger-bg)] p-4 text-sm text-[var(--danger)]">
+        <div role="alert" className="status-alert flex gap-2 border-[var(--danger-border)] bg-[var(--danger-bg)] text-[var(--danger)]">
           <XCircle aria-hidden="true" size={18} className="mt-0.5 shrink-0" />
           {error}
         </div>
@@ -145,7 +145,7 @@ export function ImportExportManager() {
       {message ? (
         <div
           role="status"
-          className="flex gap-2 rounded-lg border border-[var(--success-border)] bg-[var(--success-bg)] p-4 text-sm font-semibold text-[var(--success)]"
+          className="status-alert flex gap-2 border-[var(--success-border)] bg-[var(--success-bg)] font-semibold text-[var(--success)]"
         >
           <CheckCircle2 aria-hidden="true" size={18} className="mt-0.5 shrink-0" />
           {message}
@@ -153,63 +153,71 @@ export function ImportExportManager() {
       ) : null}
 
       <section className="grid gap-4 lg:grid-cols-2">
-        <article className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <p className="text-sm font-bold text-[var(--primary)]">Export</p>
-              <h3 className="mt-2 text-xl font-bold">Full JSON backup</h3>
+        <article className="premium-card flex min-h-full flex-col overflow-hidden">
+          <div className="p-5">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="eyebrow">Export</p>
+                <h3 className="mt-2 text-xl font-extrabold">Full JSON backup</h3>
+              </div>
+              <Download aria-hidden="true" size={21} className="text-[var(--muted)]" />
             </div>
-            <Download aria-hidden="true" size={21} className="text-[var(--muted)]" />
+            <p className="mt-3 text-sm leading-6 text-[var(--muted)]">
+              Includes transactions, categories, wallets, settings, app version, and export date.
+            </p>
           </div>
-          <p className="mt-3 text-sm leading-6 text-[var(--muted)]">
-            Includes transactions, categories, wallets, settings, app version, and export date.
-          </p>
-          <button
-            type="button"
-            onClick={downloadBackup}
-            disabled={isBusy}
-            className="mt-5 inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[var(--primary)] px-4 text-sm font-bold text-white disabled:opacity-60"
-          >
-            <FileJson aria-hidden="true" size={18} />
-            {isBusy ? "Working..." : "Export JSON"}
-          </button>
+          <div className="mt-auto border-t border-[var(--border)] bg-[var(--bg)]/45 p-5">
+            <button
+              type="button"
+              onClick={downloadBackup}
+              disabled={isBusy}
+              className="primary-action w-full sm:w-auto sm:min-w-36"
+            >
+              <FileJson aria-hidden="true" size={18} />
+              {isBusy ? "Working..." : "Export JSON"}
+            </button>
+          </div>
         </article>
 
-        <article className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <p className="text-sm font-bold text-[var(--primary)]">Import</p>
-              <h3 className="mt-2 text-xl font-bold">Restore from backup</h3>
+        <article className="premium-card flex min-h-full flex-col overflow-hidden">
+          <div className="p-5">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="eyebrow">Import</p>
+                <h3 className="mt-2 text-xl font-extrabold">Restore from backup</h3>
+              </div>
+              <Upload aria-hidden="true" size={21} className="text-[var(--muted)]" />
             </div>
-            <Upload aria-hidden="true" size={21} className="text-[var(--muted)]" />
+            <p className="mt-3 text-sm leading-6 text-[var(--muted)]">
+              Choose a TrackPaisa JSON file to preview records and duplicate IDs before importing.
+            </p>
           </div>
-          <p className="mt-3 text-sm leading-6 text-[var(--muted)]">
-            Choose a TrackPaisa JSON file to preview records and duplicate IDs before importing.
-          </p>
-          <label className="mt-5 inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-lg border border-[var(--border)] px-4 text-sm font-bold">
-            <Upload aria-hidden="true" size={18} />
-            Select backup file
-            <input
-              type="file"
-              accept="application/json,.json"
-              onChange={readImportFile}
-              disabled={isBusy}
-              className="sr-only"
-            />
-          </label>
+          <div className="mt-auto border-t border-[var(--border)] bg-[var(--bg)]/45 p-5">
+            <label className="secondary-action w-full cursor-pointer sm:w-auto sm:min-w-44">
+              <Upload aria-hidden="true" size={18} />
+              Select backup file
+              <input
+                type="file"
+                accept="application/json,.json"
+                onChange={readImportFile}
+                disabled={isBusy}
+                className="sr-only"
+              />
+            </label>
+          </div>
         </article>
       </section>
 
       {preview ? (
-        <section className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5">
+        <section className="section-card">
           <div className="flex flex-col justify-between gap-3 md:flex-row md:items-start">
             <div>
-              <p className="text-sm font-bold text-[var(--primary)]">Import preview</p>
-              <h3 className="mt-2 text-xl font-bold">
+              <p className="eyebrow">Import preview</p>
+              <h3 className="mt-2 text-xl font-extrabold">
                 Backup from {formatBackupDate(preview.backup.exportedAt)}
               </h3>
             </div>
-            <span className="inline-flex w-fit items-center gap-2 rounded-lg border border-[var(--border)] px-3 py-2 text-sm font-bold text-[var(--muted)]">
+            <span className="pill w-fit text-sm">
               <ShieldCheck aria-hidden="true" size={17} />
               Safety backup before import
             </span>
@@ -225,7 +233,7 @@ export function ImportExportManager() {
           </div>
 
           {preview.invalidReasons.length > 0 ? (
-            <div role="alert" className="mt-5 rounded-lg border border-[var(--danger-border)] bg-[var(--danger-bg)] p-4 text-sm text-[var(--danger)]">
+            <div role="alert" className="status-alert mt-5 border-[var(--danger-border)] bg-[var(--danger-bg)] text-[var(--danger)]">
               {preview.invalidReasons.join(" ")}
             </div>
           ) : (
@@ -234,7 +242,7 @@ export function ImportExportManager() {
                 type="button"
                 onClick={() => runImport("skip")}
                 disabled={isBusy}
-                className="inline-flex min-h-11 items-center justify-center rounded-lg bg-[var(--primary)] px-4 text-sm font-bold text-white disabled:opacity-60"
+                className="primary-action"
               >
                 Import new only
               </button>
@@ -242,7 +250,7 @@ export function ImportExportManager() {
                 type="button"
                 onClick={() => runImport("overwrite")}
                 disabled={isBusy}
-                className="inline-flex min-h-11 items-center justify-center rounded-lg border border-[var(--border)] px-4 text-sm font-bold disabled:opacity-60"
+                className="secondary-action"
               >
                 Overwrite duplicates
               </button>
@@ -250,7 +258,7 @@ export function ImportExportManager() {
                 type="button"
                 onClick={() => runImport("replace")}
                 disabled={isBusy}
-                className="inline-flex min-h-11 items-center justify-center rounded-lg border border-[var(--danger-border)] px-4 text-sm font-bold text-[var(--danger)] disabled:opacity-60"
+                className="secondary-action border-[var(--danger-border)] text-[var(--danger)]"
               >
                 Replace all data
               </button>
@@ -264,7 +272,7 @@ export function ImportExportManager() {
 
 function PreviewStat({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-lg border border-[var(--border)] bg-[var(--bg)] p-4">
+    <div className="subtle-panel">
       <p className="text-sm font-bold text-[var(--muted)]">{label}</p>
       <p className="mt-2 text-2xl font-bold">{value.toLocaleString("en-IN")}</p>
     </div>

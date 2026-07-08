@@ -4,6 +4,7 @@ import {
   ArrowDownLeft,
   ArrowUpRight,
   Copy,
+  MoreVertical,
   Pencil,
   Plus,
   Save,
@@ -12,7 +13,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { listWallets } from "@/lib/db/repositories/advanced-tracking-repository";
 import { seedDefaultCategories, listCategories } from "@/lib/db/repositories/categories-repository";
 import {
@@ -50,6 +51,7 @@ const initialFilters: Filters = {
 
 const defaultWalletOptions = ["Cash", "Bank", "UPI"];
 const predefinedTags = ["monthly", "fixed", "work", "food", "travel", "rent", "salary"];
+const pageSize = 10;
 
 interface EditDraft {
   type: TransactionType;
@@ -74,6 +76,8 @@ export function TransactionList() {
   const [editDraft, setEditDraft] = useState<EditDraft | null>(null);
   const [pendingActionId, setPendingActionId] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
+  const [page, setPage] = useState(1);
+  const [openActionId, setOpenActionId] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -144,8 +148,24 @@ export function TransactionList() {
     ],
     [filters.tag, transactions],
   );
+  const analytics = useMemo(() => summarizeTransactions(transactions), [transactions]);
+  const totalPages = Math.max(1, Math.ceil(transactions.length / pageSize));
+  const pagedTransactions = useMemo(
+    () => transactions.slice((page - 1) * pageSize, page * pageSize),
+    [page, transactions],
+  );
+  const pageStart = transactions.length === 0 ? 0 : (page - 1) * pageSize + 1;
+  const pageEnd = Math.min(transactions.length, page * pageSize);
+
+  useEffect(() => {
+    if (page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [page, totalPages]);
 
   function updateFilter<Key extends keyof Filters>(key: Key, value: Filters[Key]) {
+    setPage(1);
+    setOpenActionId(null);
     setFilters((current) => ({
       ...current,
       [key]: value,
@@ -154,11 +174,13 @@ export function TransactionList() {
   }
 
   function refreshTransactions() {
+    setOpenActionId(null);
     setReloadKey((current) => current + 1);
   }
 
   function startEdit(transaction: Transaction) {
     setEditingId(transaction.id);
+    setOpenActionId(null);
     setEditDraft({
       type: transaction.type,
       amount: String(transaction.amount),
@@ -259,25 +281,52 @@ export function TransactionList() {
   }
 
   return (
-    <section className="grid gap-5">
-      <div className="flex flex-col justify-between gap-3 md:flex-row md:items-end">
+    <section className="page-stack">
+      <div className="page-hero">
         <div>
-          <p className="text-sm font-bold text-[var(--primary)]">History</p>
-          <h2 className="mt-2 text-2xl font-bold">Transactions</h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--muted)]">
+          <p className="eyebrow">History</p>
+          <h2 className="heading-lg">Transactions</h2>
+          <p className="copy">
             Review income and expenses saved on this device.
           </p>
         </div>
         <a
           href="/transactions/new"
-          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[var(--primary)] px-4 text-sm font-bold text-white"
+          className="primary-action"
         >
           <Plus aria-hidden="true" size={18} />
           Add transaction
         </a>
       </div>
 
-      <form className="grid gap-4 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-5">
+      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-label="Transaction analytics">
+        <AnalyticsCard
+          icon={ArrowUpRight}
+          label="Income"
+          value={formatSignedInr(analytics.income, "income")}
+          detail={`${analytics.incomeCount} income ${analytics.incomeCount === 1 ? "entry" : "entries"}`}
+        />
+        <AnalyticsCard
+          icon={ArrowDownLeft}
+          label="Expense"
+          value={formatSignedInr(analytics.expense, "expense")}
+          detail={`${analytics.expenseCount} expense ${analytics.expenseCount === 1 ? "entry" : "entries"}`}
+        />
+        <AnalyticsCard
+          icon={analytics.net >= 0 ? ArrowUpRight : ArrowDownLeft}
+          label="Net flow"
+          value={formatSignedInr(Math.abs(analytics.net), analytics.net >= 0 ? "income" : "expense")}
+          detail={analytics.net >= 0 ? "Positive balance in this view" : "Spending exceeds income here"}
+        />
+        <AnalyticsCard
+          icon={SlidersHorizontal}
+          label="Records"
+          value={transactions.length.toLocaleString("en-IN")}
+          detail={`Average expense ${formatInr(analytics.averageExpense)}`}
+        />
+      </section>
+
+      <form className="section-card grid gap-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2 text-sm font-bold">
             <SlidersHorizontal aria-hidden="true" size={18} />
@@ -285,8 +334,12 @@ export function TransactionList() {
           </div>
           <button
             type="button"
-            onClick={() => setFilters(initialFilters)}
-            className="inline-flex min-h-10 items-center justify-center rounded-lg border border-[var(--border)] px-3 text-xs font-bold text-[var(--muted)] hover:bg-[var(--surface-muted)] hover:text-[var(--text)]"
+            onClick={() => {
+              setFilters(initialFilters);
+              setPage(1);
+              setOpenActionId(null);
+            }}
+            className="secondary-action min-h-10 px-3 text-xs text-[var(--muted)]"
           >
             Reset
           </button>
@@ -305,7 +358,7 @@ export function TransactionList() {
                 value={filters.search}
                 onChange={(event) => updateFilter("search", event.target.value)}
                 placeholder="Note or category"
-                className="min-h-11 w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] py-2 pl-10 pr-3 text-base outline-none"
+                className="field-control py-2 pl-10 pr-3"
               />
             </span>
           </label>
@@ -315,7 +368,7 @@ export function TransactionList() {
             <select
               value={filters.type}
               onChange={(event) => updateFilter("type", event.target.value as TypeFilter)}
-              className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none"
+              className="field-control"
             >
               <option value="all">All</option>
               <option value="income">Income</option>
@@ -328,7 +381,7 @@ export function TransactionList() {
             <select
               value={filters.categoryId}
               onChange={(event) => updateFilter("categoryId", event.target.value)}
-              className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none"
+              className="field-control"
             >
               <option value="">All categories</option>
               {filteredCategories.map((category) => (
@@ -345,7 +398,7 @@ export function TransactionList() {
               value={filters.dateFrom}
               onChange={(event) => updateFilter("dateFrom", event.target.value)}
               type="date"
-              className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none"
+              className="field-control"
             />
           </label>
 
@@ -355,7 +408,7 @@ export function TransactionList() {
               value={filters.dateTo}
               onChange={(event) => updateFilter("dateTo", event.target.value)}
               type="date"
-              className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none"
+              className="field-control"
             />
           </label>
           <label className="grid gap-2 text-sm font-bold xl:col-span-6">
@@ -363,7 +416,7 @@ export function TransactionList() {
             <select
               value={filters.walletId}
               onChange={(event) => updateFilter("walletId", event.target.value)}
-              className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none"
+              className="field-control"
             >
               <option value="">All wallets</option>
               {walletOptions.map((walletName) => (
@@ -379,7 +432,7 @@ export function TransactionList() {
             <select
               value={filters.tag}
               onChange={(event) => updateFilter("tag", event.target.value)}
-              className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none"
+              className="field-control"
             >
               <option value="">All tags</option>
               {tagOptions.map((tag) => (
@@ -393,13 +446,13 @@ export function TransactionList() {
       </form>
 
       {error ? (
-        <div role="alert" className="rounded-lg border border-[var(--danger-border)] bg-[var(--danger-bg)] p-4 text-sm text-[var(--danger)]">
+        <div role="alert" className="status-alert border-[var(--danger-border)] bg-[var(--danger-bg)] text-[var(--danger)]">
           {error}
         </div>
       ) : null}
 
       {actionError ? (
-        <div role="alert" className="rounded-lg border border-[var(--danger-border)] bg-[var(--danger-bg)] p-4 text-sm text-[var(--danger)]">
+        <div role="alert" className="status-alert border-[var(--danger-border)] bg-[var(--danger-bg)] text-[var(--danger)]">
           {actionError}
         </div>
       ) : null}
@@ -407,17 +460,22 @@ export function TransactionList() {
       {actionMessage ? (
         <div
           role="status"
-          className="rounded-lg border border-[var(--success-border)] bg-[var(--success-bg)] p-4 text-sm font-semibold text-[var(--success)]"
+          className="status-alert border-[var(--success-border)] bg-[var(--success-bg)] font-semibold text-[var(--success)]"
         >
           {actionMessage}
         </div>
       ) : null}
 
-      <div className="overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--surface)]">
-        <div className="flex items-center justify-between gap-3 border-b border-[var(--border)] px-4 py-3">
-          <p className="text-sm font-bold">Saved transactions</p>
+      <div className="premium-card overflow-visible">
+        <div className="card-header">
+          <div>
+            <p className="text-sm font-bold">Saved transactions</p>
+            <p className="mt-1 text-xs font-semibold text-[var(--muted)]">
+              Analytics first, filters second, table for action.
+            </p>
+          </div>
           <p className="text-sm text-[var(--muted)]" aria-live="polite">
-            {isLoading ? "Loading..." : `${transactions.length} shown`}
+            {isLoading ? "Loading..." : `${pageStart}-${pageEnd} of ${transactions.length}`}
           </p>
         </div>
 
@@ -431,33 +489,85 @@ export function TransactionList() {
             </p>
           </div>
         ) : (
-          <ul className="divide-y divide-[var(--border)]">
-            {transactions.map((transaction) => (
-              <TransactionRow
-                key={transaction.id}
-                transaction={transaction}
-                category={categoriesById.get(transaction.categoryId)}
-                categories={categories}
-                walletOptions={walletOptions}
-                isEditing={editingId === transaction.id}
-                editDraft={editingId === transaction.id ? editDraft : null}
-                pendingActionId={pendingActionId}
-                onStartEdit={startEdit}
-                onCancelEdit={cancelEdit}
-                onDraftChange={setEditDraft}
-                onSaveEdit={saveEdit}
-                onClone={duplicateTransaction}
-                onDelete={removeTransaction}
-              />
-            ))}
-          </ul>
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[860px] border-collapse text-sm">
+                <thead className="bg-[var(--surface-muted)] text-left text-xs uppercase tracking-[0.12em] text-[var(--muted)]">
+                  <tr>
+                    <Th>Transaction</Th>
+                    <Th>Type</Th>
+                    <Th>Date</Th>
+                    <Th>Wallet</Th>
+                    <Th align="right">Amount</Th>
+                    <Th align="right">Actions</Th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[var(--border)]">
+                  {pagedTransactions.map((transaction) => (
+                    <TransactionTableRow
+                      key={transaction.id}
+                      transaction={transaction}
+                      category={categoriesById.get(transaction.categoryId)}
+                      categories={categories}
+                      walletOptions={walletOptions}
+                      isEditing={editingId === transaction.id}
+                      editDraft={editingId === transaction.id ? editDraft : null}
+                      pendingActionId={pendingActionId}
+                      openActionId={openActionId}
+                      onActionToggle={setOpenActionId}
+                      onStartEdit={startEdit}
+                      onCancelEdit={cancelEdit}
+                      onDraftChange={setEditDraft}
+                      onSaveEdit={saveEdit}
+                      onClone={duplicateTransaction}
+                      onDelete={removeTransaction}
+                    />
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <Pagination
+              count={transactions.length}
+              page={page}
+              pageEnd={pageEnd}
+              pageStart={pageStart}
+              totalPages={totalPages}
+              onPageChange={(nextPage) => {
+                setPage(nextPage);
+                setOpenActionId(null);
+              }}
+            />
+          </>
         )}
       </div>
     </section>
   );
 }
 
-function TransactionRow({
+function AnalyticsCard({
+  detail,
+  icon: Icon,
+  label,
+  value,
+}: {
+  detail: string;
+  icon: typeof ArrowUpRight;
+  label: string;
+  value: string;
+}) {
+  return (
+    <article className="stat-card">
+      <div className="flex items-center justify-between gap-3">
+        <span className="text-sm font-extrabold text-[var(--muted)]">{label}</span>
+        <Icon aria-hidden="true" size={20} className="text-[var(--accent)]" />
+      </div>
+      <p className="mt-4 break-words text-2xl font-extrabold tracking-[-0.02em]">{value}</p>
+      <p className="mt-2 text-sm leading-6 text-[var(--muted)]">{detail}</p>
+    </article>
+  );
+}
+
+function TransactionTableRow({
   transaction,
   category,
   categories,
@@ -465,6 +575,8 @@ function TransactionRow({
   isEditing,
   editDraft,
   pendingActionId,
+  openActionId,
+  onActionToggle,
   onStartEdit,
   onCancelEdit,
   onDraftChange,
@@ -479,6 +591,8 @@ function TransactionRow({
   isEditing: boolean;
   editDraft: EditDraft | null;
   pendingActionId: string | null;
+  openActionId: string | null;
+  onActionToggle: (id: string | null) => void;
   onStartEdit: (transaction: Transaction) => void;
   onCancelEdit: () => void;
   onDraftChange: (draft: EditDraft) => void;
@@ -504,189 +618,350 @@ function TransactionRow({
   }
 
   return (
-    <li className="grid gap-3 px-4 py-4 md:grid-cols-[1fr_auto] md:items-center">
-      <div className="flex min-w-0 items-start gap-3">
-        <span
-          className="mt-1 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-[var(--border)]"
-          style={{ backgroundColor: category ? `${category.color}18` : undefined }}
-          aria-hidden="true"
-        >
-          {isIncome ? <ArrowUpRight size={18} /> : <ArrowDownLeft size={18} />}
-        </span>
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <p className="font-bold">{category?.name ?? "Uncategorized"}</p>
-            <span className="rounded-lg border border-[var(--border)] px-2 py-1 text-xs font-bold capitalize text-[var(--muted)]">
-              {transaction.type}
+    <>
+      <tr className="transition hover:bg-[var(--surface-muted)]/45">
+        <Td>
+          <div className="flex min-w-0 items-start gap-3">
+            <span
+              className="mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-[var(--border)] shadow-sm"
+              style={{ backgroundColor: category ? `${category.color}18` : undefined }}
+              aria-hidden="true"
+            >
+              {isIncome ? <ArrowUpRight size={18} /> : <ArrowDownLeft size={18} />}
             </span>
-          </div>
-          <p className="mt-1 text-sm text-[var(--muted)]">
-            {formatTransactionDate(transaction.date)}
-            {transaction.walletId ? ` - ${transaction.walletId}` : ""}
-          </p>
-          {transaction.note ? (
-            <p className="mt-2 break-words text-sm leading-6">{transaction.note}</p>
-          ) : null}
-          {transaction.tags && transaction.tags.length > 0 ? (
-            <div className="mt-2 flex flex-wrap gap-1">
-              {transaction.tags.map((tag) => (
-                <span key={tag} className="rounded-lg border border-[var(--border)] px-2 py-1 text-xs font-bold text-[var(--muted)]">
-                  #{tag}
-                </span>
-              ))}
+            <div className="min-w-0">
+              <p className="font-bold">{transaction.note || category?.name || "Uncategorized"}</p>
+              <p className="mt-1 text-xs font-semibold text-[var(--muted)]">
+                {category?.name ?? "Uncategorized"}
+              </p>
+              {transaction.tags && transaction.tags.length > 0 ? (
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {transaction.tags.map((tag) => (
+                    <span key={tag} className="rounded-lg border border-[var(--border)] px-2 py-1 text-xs font-bold text-[var(--muted)]">
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
             </div>
-          ) : null}
-        </div>
-      </div>
-
-      <div className="flex flex-wrap items-center gap-2 md:justify-end">
-        <p className="mr-auto text-left text-lg font-bold md:mr-2 md:text-right">
-          <span className="sr-only">{isIncome ? "Income amount" : "Expense amount"}</span>
-          {isIncome ? "+" : "-"}
-          {formatInr(transaction.amount)}
-        </p>
-        <button
-          type="button"
-          onClick={() => onClone(transaction)}
-          disabled={pendingActionId === `clone-${transaction.id}`}
-          className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--border)] text-[var(--muted)]"
-          aria-label={`Clone ${transaction.note ?? category?.name ?? "transaction"} transaction`}
-        >
-          <Copy aria-hidden="true" size={17} />
-        </button>
-        <button
-          type="button"
-          onClick={() => onStartEdit(transaction)}
-          className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--border)] text-[var(--muted)]"
-          aria-label={`Edit ${transaction.note ?? category?.name ?? "transaction"} transaction`}
-        >
-          <Pencil aria-hidden="true" size={17} />
-        </button>
-        <button
-          type="button"
-          onClick={() => onDelete(transaction)}
-          disabled={pendingActionId === `delete-${transaction.id}`}
-          className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--danger-border)] text-[var(--danger)] disabled:opacity-60"
-          aria-label={`Delete ${transaction.note ?? category?.name ?? "transaction"} transaction`}
-        >
-          <Trash2 aria-hidden="true" size={17} />
-        </button>
-      </div>
+          </div>
+        </Td>
+        <Td>
+          <span className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2 py-1 text-xs font-bold capitalize text-[var(--muted)]">
+            {transaction.type}
+          </span>
+        </Td>
+        <Td>{formatTransactionDate(transaction.date)}</Td>
+        <Td>{transaction.walletId ?? "No wallet"}</Td>
+        <Td align="right" strong>
+          <span className={isIncome ? "text-[var(--primary)]" : "text-[var(--text)]"}>
+            {isIncome ? "+" : "-"}
+            {formatInr(transaction.amount)}
+          </span>
+        </Td>
+        <Td align="right">
+          <RowActions
+            id={`transaction-${transaction.id}`}
+            isOpen={openActionId === `transaction-${transaction.id}`}
+            transaction={transaction}
+            category={category}
+            pendingActionId={pendingActionId}
+            onToggle={onActionToggle}
+            onStartEdit={onStartEdit}
+            onClone={onClone}
+            onDelete={onDelete}
+          />
+        </Td>
+      </tr>
 
       {isEditing && editDraft ? (
-        <form
-          className="grid gap-4 rounded-lg border border-[var(--border)] bg-[var(--bg)] p-4 md:col-span-2"
-          onSubmit={(event) => {
-            event.preventDefault();
-            onSaveEdit(transaction.id);
-          }}
-        >
-          <div className="grid gap-4 md:grid-cols-3">
-            <label className="grid gap-2 text-sm font-bold">
-              Edit type
-              <select
-                value={editDraft.type}
-                onChange={(event) => updateDraft("type", event.target.value as TransactionType)}
-                className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 text-base outline-none"
-              >
-                <option value="income">Income</option>
-                <option value="expense">Expense</option>
-              </select>
-            </label>
-
-            <label className="grid gap-2 text-sm font-bold">
-              Edit amount
-              <input
-                value={editDraft.amount}
-                onChange={(event) => updateDraft("amount", event.target.value)}
-                inputMode="decimal"
-                className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 text-base font-semibold outline-none"
-              />
-            </label>
-
-            <label className="grid gap-2 text-sm font-bold">
-              Edit date
-              <input
-                value={editDraft.date}
-                onChange={(event) => updateDraft("date", event.target.value)}
-                type="date"
-                className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 text-base outline-none"
-              />
-            </label>
-
-            <label className="grid gap-2 text-sm font-bold">
-              Edit category
-              <select
-                value={editDraft.categoryId}
-                onChange={(event) => updateDraft("categoryId", event.target.value)}
-                className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 text-base outline-none"
-              >
-                <option value="">Select category</option>
-                {editCategories.map((candidate) => (
-                  <option key={candidate.id} value={candidate.id}>
-                    {candidate.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label className="grid gap-2 text-sm font-bold">
-              Edit wallet / source
-              <select
-                value={editDraft.walletId}
-                onChange={(event) => updateDraft("walletId", event.target.value)}
-                className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 text-base outline-none"
-              >
-                <option value="">No wallet</option>
-                {walletOptions.map((walletName) => (
-                  <option key={walletName} value={walletName}>
-                    {walletName}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label className="grid gap-2 text-sm font-bold">
-              Edit note
-              <input
-                value={editDraft.note}
-                onChange={(event) => updateDraft("note", event.target.value)}
-                className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 text-base outline-none"
-              />
-            </label>
-
-            <label className="grid gap-2 text-sm font-bold">
-              Edit tags
-              <input
-                value={editDraft.tagsText}
-                onChange={(event) => updateDraft("tagsText", event.target.value)}
-                placeholder="monthly, work"
-                className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 text-base outline-none"
-              />
-            </label>
-          </div>
-
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="submit"
-              disabled={pendingActionId === `save-${transaction.id}`}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[var(--primary)] px-4 text-sm font-bold text-white disabled:opacity-60"
+        <tr>
+          <td colSpan={6} className="bg-[var(--surface-muted)]/45 p-4">
+            <form
+              className="subtle-panel grid gap-4"
+              onSubmit={(event) => {
+                event.preventDefault();
+                onSaveEdit(transaction.id);
+              }}
             >
-              <Save aria-hidden="true" size={17} />
-              {pendingActionId === `save-${transaction.id}` ? "Saving..." : "Save changes"}
-            </button>
-            <button
-              type="button"
-              onClick={onCancelEdit}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-[var(--border)] px-4 text-sm font-bold"
-            >
-              <X aria-hidden="true" size={17} />
-              Cancel
-            </button>
-          </div>
-        </form>
+              <div className="grid gap-4 md:grid-cols-3">
+                <label className="grid gap-2 text-sm font-bold">
+                  Edit type
+                  <select
+                    value={editDraft.type}
+                    onChange={(event) => updateDraft("type", event.target.value as TransactionType)}
+                    className="field-control bg-[var(--surface)]"
+                  >
+                    <option value="income">Income</option>
+                    <option value="expense">Expense</option>
+                  </select>
+                </label>
+
+                <label className="grid gap-2 text-sm font-bold">
+                  Edit amount
+                  <input
+                    value={editDraft.amount}
+                    onChange={(event) => updateDraft("amount", event.target.value)}
+                    inputMode="decimal"
+                    className="field-control bg-[var(--surface)] font-semibold"
+                  />
+                </label>
+
+                <label className="grid gap-2 text-sm font-bold">
+                  Edit date
+                  <input
+                    value={editDraft.date}
+                    onChange={(event) => updateDraft("date", event.target.value)}
+                    type="date"
+                    className="field-control bg-[var(--surface)]"
+                  />
+                </label>
+
+                <label className="grid gap-2 text-sm font-bold">
+                  Edit category
+                  <select
+                    value={editDraft.categoryId}
+                    onChange={(event) => updateDraft("categoryId", event.target.value)}
+                    className="field-control bg-[var(--surface)]"
+                  >
+                    <option value="">Select category</option>
+                    {editCategories.map((candidate) => (
+                      <option key={candidate.id} value={candidate.id}>
+                        {candidate.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className="grid gap-2 text-sm font-bold">
+                  Edit wallet / source
+                  <select
+                    value={editDraft.walletId}
+                    onChange={(event) => updateDraft("walletId", event.target.value)}
+                    className="field-control bg-[var(--surface)]"
+                  >
+                    <option value="">No wallet</option>
+                    {walletOptions.map((walletName) => (
+                      <option key={walletName} value={walletName}>
+                        {walletName}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className="grid gap-2 text-sm font-bold">
+                  Edit note
+                  <input
+                    value={editDraft.note}
+                    onChange={(event) => updateDraft("note", event.target.value)}
+                    className="field-control bg-[var(--surface)]"
+                  />
+                </label>
+
+                <label className="grid gap-2 text-sm font-bold">
+                  Edit tags
+                  <input
+                    value={editDraft.tagsText}
+                    onChange={(event) => updateDraft("tagsText", event.target.value)}
+                    placeholder="monthly, work"
+                    className="field-control bg-[var(--surface)]"
+                  />
+                </label>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="submit"
+                  disabled={pendingActionId === `save-${transaction.id}`}
+                  className="primary-action"
+                >
+                  <Save aria-hidden="true" size={17} />
+                  {pendingActionId === `save-${transaction.id}` ? "Saving..." : "Save changes"}
+                </button>
+                <button
+                  type="button"
+                  onClick={onCancelEdit}
+                  className="secondary-action"
+                >
+                  <X aria-hidden="true" size={17} />
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </td>
+        </tr>
       ) : null}
-    </li>
+    </>
+  );
+}
+
+function RowActions({
+  category,
+  id,
+  isOpen,
+  onClone,
+  onDelete,
+  onStartEdit,
+  onToggle,
+  pendingActionId,
+  transaction,
+}: {
+  category?: Category;
+  id: string;
+  isOpen: boolean;
+  onClone: (transaction: Transaction) => void;
+  onDelete: (transaction: Transaction) => void;
+  onStartEdit: (transaction: Transaction) => void;
+  onToggle: (id: string | null) => void;
+  pendingActionId: string | null;
+  transaction: Transaction;
+}) {
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
+  const [menuPosition, setMenuPosition] = useState({ right: 0, top: 0 });
+  const label = transaction.note ?? category?.name ?? "transaction";
+
+  function toggleMenu() {
+    const button = buttonRef.current;
+
+    if (button) {
+      const rect = button.getBoundingClientRect();
+      const menuHeight = 136;
+
+      setMenuPosition({
+        right: Math.max(12, window.innerWidth - rect.right),
+        top: Math.max(12, Math.min(rect.bottom + 8, window.innerHeight - menuHeight - 12)),
+      });
+    }
+
+    onToggle(isOpen ? null : id);
+  }
+
+  function runAction(action: () => void) {
+    onToggle(null);
+    action();
+  }
+
+  return (
+    <div className="inline-flex justify-end">
+      <button
+        ref={buttonRef}
+        type="button"
+        onClick={toggleMenu}
+        className="icon-action"
+        aria-label={`Open actions for ${label} transaction`}
+        aria-expanded={isOpen}
+      >
+        <MoreVertical aria-hidden="true" size={18} />
+      </button>
+      {isOpen ? (
+        <div
+          className="fixed z-[80] min-w-48 overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--surface)] text-left shadow-soft backdrop-blur-xl"
+          style={{ right: menuPosition.right, top: menuPosition.top }}
+        >
+          <button
+            type="button"
+            onClick={() => runAction(() => onClone(transaction))}
+            disabled={pendingActionId === `clone-${transaction.id}`}
+            className="flex min-h-11 w-full items-center gap-2 px-3 text-sm font-bold text-[var(--text)] hover:bg-[var(--surface-muted)] disabled:opacity-60"
+            aria-label={`Clone ${label} transaction`}
+          >
+            <Copy aria-hidden="true" size={16} />
+            Clone
+          </button>
+          <button
+            type="button"
+            onClick={() => runAction(() => onStartEdit(transaction))}
+            className="flex min-h-11 w-full items-center gap-2 px-3 text-sm font-bold text-[var(--text)] hover:bg-[var(--surface-muted)]"
+            aria-label={`Edit ${label} transaction`}
+          >
+            <Pencil aria-hidden="true" size={16} />
+            Edit
+          </button>
+          <button
+            type="button"
+            onClick={() => runAction(() => void onDelete(transaction))}
+            disabled={pendingActionId === `delete-${transaction.id}`}
+            className="flex min-h-11 w-full items-center gap-2 px-3 text-sm font-bold text-[var(--danger)] hover:bg-[var(--danger-bg)] disabled:opacity-60"
+            aria-label={`Delete ${label} transaction`}
+          >
+            <Trash2 aria-hidden="true" size={16} />
+            Delete
+          </button>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function Th({
+  align = "left",
+  children,
+}: {
+  align?: "left" | "right";
+  children: React.ReactNode;
+}) {
+  return (
+    <th className={`px-4 py-3 font-bold ${align === "right" ? "text-right" : "text-left"}`}>
+      {children}
+    </th>
+  );
+}
+
+function Td({
+  align = "left",
+  children,
+  strong = false,
+}: {
+  align?: "left" | "right";
+  children: React.ReactNode;
+  strong?: boolean;
+}) {
+  return (
+    <td className={`px-4 py-4 align-top ${align === "right" ? "text-right" : "text-left"} ${strong ? "font-bold" : ""}`}>
+      {children}
+    </td>
+  );
+}
+
+function Pagination({
+  count,
+  onPageChange,
+  page,
+  pageEnd,
+  pageStart,
+  totalPages,
+}: {
+  count: number;
+  onPageChange: (page: number) => void;
+  page: number;
+  pageEnd: number;
+  pageStart: number;
+  totalPages: number;
+}) {
+  return (
+    <div className="flex flex-col justify-between gap-3 border-t border-[var(--border)] px-4 py-3 text-sm text-[var(--muted)] sm:flex-row sm:items-center">
+      <span>
+        {pageStart}-{pageEnd} of {count}, 10 per page
+      </span>
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={() => onPageChange(Math.max(1, page - 1))}
+          disabled={page <= 1}
+          className="secondary-action min-h-10 px-3 disabled:opacity-50"
+        >
+          Previous
+        </button>
+        <button
+          type="button"
+          onClick={() => onPageChange(Math.min(totalPages, page + 1))}
+          disabled={page >= totalPages}
+          className="secondary-action min-h-10 px-3 disabled:opacity-50"
+        >
+          Next
+        </button>
+      </div>
+    </div>
   );
 }
 
@@ -696,6 +971,35 @@ function formatTransactionDate(value: string) {
     month: "short",
     year: "numeric",
   }).format(new Date(`${value}T00:00:00`));
+}
+
+function formatSignedInr(value: number, type: TransactionType) {
+  return `${type === "income" ? "+" : "-"}${formatInr(value)}`;
+}
+
+function summarizeTransactions(transactions: Transaction[]) {
+  const income = transactions
+    .filter((transaction) => transaction.type === "income")
+    .reduce((total, transaction) => total + transaction.amount, 0);
+  const expenseTransactions = transactions.filter(
+    (transaction) => transaction.type === "expense",
+  );
+  const expense = expenseTransactions.reduce(
+    (total, transaction) => total + transaction.amount,
+    0,
+  );
+
+  return {
+    averageExpense:
+      expenseTransactions.length === 0
+        ? 0
+        : Math.round(expense / expenseTransactions.length),
+    expense,
+    expenseCount: expenseTransactions.length,
+    income,
+    incomeCount: transactions.length - expenseTransactions.length,
+    net: income - expense,
+  };
 }
 
 function parseTags(value: string) {

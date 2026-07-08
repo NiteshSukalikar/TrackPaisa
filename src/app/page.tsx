@@ -3,7 +3,7 @@ import { OverviewDashboard } from "@/features/overview/overview-dashboard";
 
 export default function Home() {
   return (
-    <AppShell>
+    <AppShell title="Overview">
       <OverviewDashboard />
     </AppShell>
   );

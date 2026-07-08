@@ -198,12 +198,12 @@ export function CategoryManager() {
   }
 
   return (
-    <section className="grid gap-5">
-      <div className="flex flex-col justify-between gap-3 md:flex-row md:items-end">
+    <section className="page-stack">
+      <div className="page-hero">
         <div>
-          <p className="text-sm font-bold text-[var(--primary)]">Money labels</p>
-          <h2 className="mt-2 text-2xl font-bold">Categories</h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--muted)]">
+          <p className="eyebrow">Money labels</p>
+          <h2 className="heading-lg">Categories</h2>
+          <p className="copy">
             Create income and expense categories for the way you actually track money.
           </p>
         </div>
@@ -211,7 +211,7 @@ export function CategoryManager() {
 
       <form
         onSubmit={addCategory}
-        className="grid gap-4 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-5"
+        className="section-card grid gap-4"
       >
         <div className="flex items-center gap-2 text-sm font-bold">
           <Plus aria-hidden="true" size={18} />
@@ -223,7 +223,7 @@ export function CategoryManager() {
           <button
             type="submit"
             disabled={pendingActionId === "add"}
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[var(--primary)] px-5 text-sm font-bold text-white disabled:opacity-60 md:col-span-2 xl:col-span-1 xl:min-w-24"
+            className="primary-action px-5 md:col-span-2 xl:col-span-1 xl:min-w-24"
           >
             <Plus aria-hidden="true" size={17} />
             {pendingActionId === "add" ? "Adding..." : "Add"}
@@ -232,7 +232,7 @@ export function CategoryManager() {
       </form>
 
       {error ? (
-        <div role="alert" className="rounded-lg border border-[var(--danger-border)] bg-[var(--danger-bg)] p-4 text-sm text-[var(--danger)]">
+        <div role="alert" className="status-alert border-[var(--danger-border)] bg-[var(--danger-bg)] text-[var(--danger)]">
           {error}
         </div>
       ) : null}
@@ -240,7 +240,7 @@ export function CategoryManager() {
       {message ? (
         <div
           role="status"
-          className="flex items-center gap-2 rounded-lg border border-[var(--success-border)] bg-[var(--success-bg)] p-4 text-sm font-semibold text-[var(--success)]"
+          className="status-alert flex items-center gap-2 border-[var(--success-border)] bg-[var(--success-bg)] font-semibold text-[var(--success)]"
         >
           <CheckCircle2 aria-hidden="true" size={18} />
           {message}
@@ -315,8 +315,8 @@ function CategorySection({
   const Icon = type === "income" ? ArrowUpRight : ArrowDownLeft;
 
   return (
-    <div className="overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--surface)]">
-      <div className="flex items-center justify-between gap-3 border-b border-[var(--border)] px-4 py-3">
+    <div className="premium-card overflow-hidden">
+      <div className="card-header">
         <div className="flex items-center gap-2 text-sm font-bold">
           <Icon aria-hidden="true" size={18} />
           {title}
@@ -377,10 +377,10 @@ function CategoryRow({
   onDelete: (category: Category) => void;
 }) {
   return (
-    <li className="grid gap-3 px-4 py-4">
+    <li className="grid gap-3 px-4 py-4 transition hover:bg-[var(--surface-muted)]/45">
       <div className="flex min-w-0 items-center gap-3">
         <span
-          className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-[var(--border)] text-sm font-bold"
+          className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-[var(--border)] text-sm font-extrabold shadow-sm"
           style={{ backgroundColor: `${category.color}18`, color: category.color }}
           aria-hidden="true"
         >
@@ -389,7 +389,7 @@ function CategoryRow({
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <p className="break-words font-bold">{category.name}</p>
-            <span className="rounded-lg border border-[var(--border)] px-2 py-1 text-xs font-bold text-[var(--muted)]">
+            <span className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2 py-1 text-xs font-bold text-[var(--muted)]">
               {category.isDefault ? "Default" : "Custom"}
             </span>
           </div>
@@ -401,7 +401,7 @@ function CategoryRow({
           <button
             type="button"
             onClick={() => onStartEdit(category)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--border)] text-[var(--muted)]"
+            className="icon-action"
             aria-label={`Edit ${category.name} category`}
           >
             <Pencil aria-hidden="true" size={17} />
@@ -410,7 +410,7 @@ function CategoryRow({
             type="button"
             onClick={() => onDelete(category)}
             disabled={pendingActionId === `delete-${category.id}` || usageCount > 0}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--danger-border)] text-[var(--danger)] disabled:cursor-not-allowed disabled:opacity-50"
+            className="icon-action border-[var(--danger-border)] text-[var(--danger)] disabled:cursor-not-allowed disabled:opacity-50"
             aria-label={`Delete ${category.name} category`}
             title={usageCount > 0 ? "Used categories cannot be deleted" : "Delete category"}
           >
@@ -421,7 +421,7 @@ function CategoryRow({
 
       {isEditing && editDraft ? (
         <form
-          className="grid gap-4 rounded-lg border border-[var(--border)] bg-[var(--bg)] p-4"
+          className="subtle-panel grid gap-4"
           onSubmit={(event) => {
             event.preventDefault();
             onSaveEdit(category);
@@ -434,7 +434,7 @@ function CategoryRow({
             <button
               type="submit"
               disabled={pendingActionId === `save-${category.id}`}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[var(--primary)] px-4 text-sm font-bold text-white disabled:opacity-60"
+              className="primary-action"
             >
               <Save aria-hidden="true" size={17} />
               {pendingActionId === `save-${category.id}` ? "Saving..." : "Save changes"}
@@ -442,7 +442,7 @@ function CategoryRow({
             <button
               type="button"
               onClick={onCancelEdit}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-[var(--border)] px-4 text-sm font-bold"
+              className="secondary-action"
             >
               <X aria-hidden="true" size={17} />
               Cancel
@@ -475,7 +475,7 @@ function CategoryDraftFields({
           value={draft.name}
           onChange={(event) => updateDraft("name", event.target.value)}
           placeholder="Groceries"
-          className="min-h-11 w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none"
+          className="field-control"
         />
       </label>
 
@@ -484,7 +484,7 @@ function CategoryDraftFields({
         <select
           value={draft.type}
           onChange={(event) => updateDraft("type", event.target.value as TransactionType)}
-          className="min-h-11 w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none"
+          className="field-control"
         >
           <option value="expense">Expense</option>
           <option value="income">Income</option>
@@ -496,7 +496,7 @@ function CategoryDraftFields({
         <select
           value={draft.icon}
           onChange={(event) => updateDraft("icon", event.target.value)}
-          className="min-h-11 w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none"
+          className="field-control"
         >
           {iconOptions.map((icon) => (
             <option key={icon} value={icon}>
@@ -508,7 +508,7 @@ function CategoryDraftFields({
 
       <label className="grid gap-2 text-sm font-bold">
         Color
-        <span className="flex min-h-11 w-full items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3">
+        <span className="field-control flex items-center gap-2">
           <span
             aria-hidden="true"
             className="h-5 w-5 rounded-full border border-[var(--border)]"

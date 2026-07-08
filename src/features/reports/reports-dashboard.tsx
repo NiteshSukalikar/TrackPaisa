@@ -96,18 +96,18 @@ export function ReportsDashboard() {
   }
 
   return (
-    <section className="grid gap-6">
-      <div className="flex flex-col justify-between gap-3 md:flex-row md:items-end">
+    <section className="page-stack">
+      <div className="page-hero">
         <div>
-          <p className="text-sm font-bold text-[var(--primary)]">Reports</p>
-          <h2 className="mt-2 text-2xl font-bold">Where your money moved</h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--muted)]">
+          <p className="eyebrow">Reports</p>
+          <h2 className="heading-lg">Where your money moved</h2>
+          <p className="copy">
             Compare income, expenses, categories, and monthly trends from records saved on this device.
           </p>
         </div>
       </div>
 
-      <form className="grid gap-4 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
+      <form className="section-card grid gap-4">
         <div className="flex items-center gap-2 text-sm font-bold">
           <CalendarRange aria-hidden="true" size={18} />
           Period
@@ -119,7 +119,7 @@ export function ReportsDashboard() {
             <select
               value={period}
               onChange={(event) => updatePeriod(event.target.value as ReportPeriod)}
-              className="min-h-11 w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none"
+              className="field-control min-h-11 w-full"
             >
               {periodOptions.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -138,7 +138,7 @@ export function ReportsDashboard() {
                 setCustomRange((current) => ({ ...current, from: event.target.value }));
               }}
               type="date"
-              className="min-h-11 w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none"
+              className="field-control min-h-11 w-full"
             />
           </label>
 
@@ -151,21 +151,21 @@ export function ReportsDashboard() {
                 setCustomRange((current) => ({ ...current, to: event.target.value }));
               }}
               type="date"
-              className="min-h-11 w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none"
+              className="field-control min-h-11 w-full"
             />
           </label>
         </div>
       </form>
 
       {error ? (
-        <div role="alert" className="rounded-lg border border-[var(--danger-border)] bg-[var(--danger-bg)] p-4 text-sm text-[var(--danger)]">
+        <div role="alert" className="status-alert border-[var(--danger-border)] bg-[var(--danger-bg)] text-[var(--danger)]">
           {error}
         </div>
       ) : null}
 
       {isLoading ? (
-        <section className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5">
-          <p className="text-sm font-bold text-[var(--primary)]">Loading reports</p>
+        <section className="section-card">
+          <p className="eyebrow">Loading reports</p>
           <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
             Reading local transaction data for analytics.
           </p>
@@ -205,11 +205,11 @@ export function ReportsDashboard() {
             />
           </section>
 
-          <section className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5">
+          <section className="section-card">
             <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
               <div>
-                <p className="text-sm font-bold text-[var(--primary)]">{report.periodLabel}</p>
-                <h3 className="mt-2 text-xl font-bold">Report summary</h3>
+                <p className="eyebrow">{report.periodLabel}</p>
+                <h3 className="mt-2 text-xl font-extrabold">Report summary</h3>
               </div>
               <p className="text-sm text-[var(--muted)]" aria-live="polite">
                 {report.transactionCount} {report.transactionCount === 1 ? "transaction" : "transactions"}
@@ -221,9 +221,9 @@ export function ReportsDashboard() {
           </section>
 
           <section className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
-            <article className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5">
+            <article className="section-card">
               <div className="flex items-center justify-between gap-3">
-                <h3 className="text-lg font-bold">Category breakdown</h3>
+                <h3 className="text-lg font-extrabold">Category breakdown</h3>
                 <ChartPie aria-hidden="true" size={19} className="text-[var(--muted)]" />
               </div>
 
@@ -240,7 +240,7 @@ export function ReportsDashboard() {
                         <span className="shrink-0 text-[var(--muted)]">{formatInr(category.total)}</span>
                       </div>
                       <div
-                        className="h-3 overflow-hidden rounded-lg bg-[var(--surface-muted)]"
+                        className="progress-track h-3"
                         role="img"
                         aria-label={`${category.name}: ${formatInr(category.total)} across ${category.count} transactions`}
                       >
@@ -258,9 +258,9 @@ export function ReportsDashboard() {
               )}
             </article>
 
-            <article className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5">
+            <article className="section-card">
               <div className="flex items-center justify-between gap-3">
-                <h3 className="text-lg font-bold">Monthly trend</h3>
+                <h3 className="text-lg font-extrabold">Monthly trend</h3>
                 <BarChart3 aria-hidden="true" size={19} className="text-[var(--muted)]" />
               </div>
 
@@ -310,12 +310,12 @@ function ReportStat({
   value: string;
 }) {
   return (
-    <article className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5">
+    <article className="stat-card">
       <div className="flex items-center justify-between gap-3">
         <span className="text-sm font-bold text-[var(--muted)]">{label}</span>
         <Icon aria-hidden="true" size={20} className="text-[var(--accent)]" />
       </div>
-      <p className="mt-4 break-words text-2xl font-bold">{value}</p>
+      <p className="mt-4 break-words text-2xl font-extrabold tracking-[-0.02em]">{value}</p>
       <p className="mt-2 text-sm leading-6 text-[var(--muted)]">{detail}</p>
     </article>
   );
@@ -331,7 +331,7 @@ function TrendBar({
   tone: "expense" | "income";
 }) {
   return (
-    <div className="h-3 overflow-hidden rounded-lg bg-[var(--surface-muted)]">
+    <div className="progress-track h-3">
       <div
         className="h-full rounded-lg"
         style={{
@@ -345,15 +345,15 @@ function TrendBar({
 
 function EmptyReports() {
   return (
-    <section className="rounded-lg border border-dashed border-[var(--border)] bg-[var(--surface)] p-8 text-center">
-      <p className="text-sm font-bold text-[var(--primary)]">No report data yet</p>
-      <h3 className="mt-2 text-2xl font-bold">Add transactions to see patterns</h3>
+    <section className="premium-card border-dashed p-8 text-center">
+      <p className="eyebrow">No report data yet</p>
+      <h3 className="mt-2 text-2xl font-extrabold">Add transactions to see patterns</h3>
       <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-[var(--muted)]">
         Reports will show category spending, monthly trends, and period comparisons once income and expenses are saved.
       </p>
       <a
         href="/transactions/new"
-        className="mt-5 inline-flex min-h-11 items-center justify-center rounded-lg bg-[var(--primary)] px-4 text-sm font-bold text-white"
+        className="primary-action mt-5"
       >
         Add transaction
       </a>

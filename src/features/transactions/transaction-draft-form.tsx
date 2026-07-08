@@ -132,12 +132,12 @@ export function TransactionDraftForm({ initialType = "expense" }: TransactionDra
   return (
     <form
       onSubmit={handleSubmit}
-      className="grid gap-5 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5"
+      className="section-card grid gap-5"
     >
       <div>
-        <p className="text-sm font-bold text-[var(--primary)]">Fast entry</p>
-        <h2 className="mt-2 text-2xl font-bold">Add income or expense</h2>
-        <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
+        <p className="eyebrow">Fast entry</p>
+        <h2 className="heading-lg">Add income or expense</h2>
+        <p className="copy">
           Save income and expenses locally. No account needed; your data stays on this device.
         </p>
       </div>
@@ -162,7 +162,7 @@ export function TransactionDraftForm({ initialType = "expense" }: TransactionDra
             onChange={(event) => setAmount(event.target.value)}
             inputMode="decimal"
             placeholder="850"
-            className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base font-semibold outline-none"
+            className="field-control font-semibold"
           />
         </label>
 
@@ -172,7 +172,7 @@ export function TransactionDraftForm({ initialType = "expense" }: TransactionDra
             value={categoryId}
             onChange={(event) => setCategoryId(event.target.value)}
             disabled={isLoadingCategories}
-            className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none"
+            className="field-control"
           >
             <option value="">
               {isLoadingCategories ? "Loading categories" : "Select category"}
@@ -191,7 +191,7 @@ export function TransactionDraftForm({ initialType = "expense" }: TransactionDra
             value={date}
             onChange={(event) => setDate(event.target.value)}
             type="date"
-            className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none"
+            className="field-control"
           />
         </label>
 
@@ -200,7 +200,7 @@ export function TransactionDraftForm({ initialType = "expense" }: TransactionDra
           <select
             value={walletId}
             onChange={(event) => setWalletId(event.target.value)}
-            className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none"
+            className="field-control"
           >
             <option value="">Select wallet or source</option>
             {walletOptions.map((walletName) => (
@@ -224,7 +224,7 @@ export function TransactionDraftForm({ initialType = "expense" }: TransactionDra
                 type="button"
                 onClick={() => toggleTag(tag)}
                 aria-pressed={isSelected}
-                className="inline-flex min-h-9 items-center justify-center rounded-lg border border-[var(--border)] px-3 text-xs font-bold text-[var(--muted)] aria-pressed:border-[var(--primary)] aria-pressed:bg-[var(--surface-muted)] aria-pressed:text-[var(--text)]"
+                className="inline-flex min-h-9 items-center justify-center rounded-lg border border-[var(--border)] px-3 text-xs font-bold text-[var(--muted)] transition aria-pressed:border-[var(--primary)] aria-pressed:bg-[var(--surface-muted)] aria-pressed:text-[var(--primary)]"
               >
                 #{tag}
               </button>
@@ -236,7 +236,7 @@ export function TransactionDraftForm({ initialType = "expense" }: TransactionDra
           value={tagsText}
           onChange={(event) => setTagsText(event.target.value)}
           placeholder="Add custom tags separated by commas"
-          className="min-h-11 rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 text-base outline-none"
+          className="field-control"
         />
       </div>
 
@@ -247,12 +247,12 @@ export function TransactionDraftForm({ initialType = "expense" }: TransactionDra
           onChange={(event) => setNote(event.target.value)}
           rows={3}
           placeholder="Lunch, salary, groceries..."
-          className="rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 py-3 text-base outline-none"
+          className="field-control py-3"
         />
       </label>
 
       {errors.length > 0 ? (
-        <div role="alert" className="rounded-lg border border-[var(--danger-border)] bg-[var(--danger-bg)] p-4 text-sm text-[var(--danger)]">
+        <div role="alert" className="status-alert border-[var(--danger-border)] bg-[var(--danger-bg)] text-[var(--danger)]">
           <p className="font-bold">Fix these fields</p>
           <ul className="mt-2 grid gap-1">
             {errors.map((error) => (
@@ -265,7 +265,7 @@ export function TransactionDraftForm({ initialType = "expense" }: TransactionDra
       {savedMessage ? (
         <div
           role="status"
-          className="flex items-center gap-2 rounded-lg border border-[var(--success-border)] bg-[var(--success-bg)] p-4 text-sm font-semibold text-[var(--success)]"
+          className="status-alert flex items-center gap-2 border-[var(--success-border)] bg-[var(--success-bg)] font-semibold text-[var(--success)]"
         >
           <CheckCircle2 aria-hidden="true" size={18} />
           {savedMessage}
@@ -275,7 +275,7 @@ export function TransactionDraftForm({ initialType = "expense" }: TransactionDra
       <button
         type="submit"
         disabled={isSaving}
-        className="min-h-11 rounded-lg bg-[var(--primary)] px-4 text-sm font-bold text-white"
+        className="primary-action"
       >
         {isSaving ? "Saving..." : `Save ${type}`}
       </button>
@@ -297,7 +297,7 @@ function TypeButton({
       type="button"
       aria-pressed={active}
       onClick={onClick}
-      className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-[var(--border)] px-4 text-sm font-bold aria-pressed:bg-[var(--surface-muted)] aria-pressed:text-[var(--text)]"
+      className="secondary-action aria-pressed:border-[var(--primary)] aria-pressed:bg-[var(--surface-muted)] aria-pressed:text-[var(--primary)]"
     >
       {children}
     </button>

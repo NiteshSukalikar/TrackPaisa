@@ -57,7 +57,7 @@ export function ThemeToggle() {
         type="button"
         onClick={toggleTheme}
         aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
-        className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 text-sm font-bold text-[var(--text)]"
+        className="secondary-action rounded-full px-4 text-[var(--text)]"
       >
         {theme === "dark" ? (
           <Sun aria-hidden="true" size={18} />
@@ -72,7 +72,7 @@ export function ThemeToggle() {
         onClick={togglePalette}
         aria-label={`Switch to ${colorTheme === "colorful" ? "green-blue" : "colorful"} theme`}
         title={getColorThemeLabel(colorTheme)}
-        className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 text-sm font-bold text-[var(--text)]"
+        className="secondary-action rounded-full px-4 text-[var(--text)]"
       >
         <Palette aria-hidden="true" size={18} />
         <span className="hidden sm:inline">Theme</span>

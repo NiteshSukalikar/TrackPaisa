@@ -78,12 +78,12 @@ export function PwaRegistration() {
   }
 
   return (
-    <div className="fixed inset-x-3 top-3 z-50 mx-auto flex max-w-md items-center justify-between gap-3 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3 text-sm shadow-soft">
+    <div className="fixed inset-x-3 top-3 z-50 mx-auto flex max-w-md items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-[var(--surface)]/94 p-3 text-sm shadow-soft backdrop-blur-xl">
       <span className="font-semibold text-[var(--text)]">A new TrackPaisa version is ready.</span>
       <button
         type="button"
         onClick={applyUpdate}
-        className="min-h-10 rounded-lg bg-[var(--primary)] px-3 font-bold text-white"
+        className="primary-action min-h-10 px-3"
       >
         Reload
       </button>

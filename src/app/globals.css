@@ -4,16 +4,21 @@
 
 :root {
   color-scheme: light;
-  --bg: #f8fafc;
+  --bg: #f6f8fb;
   --surface: #ffffff;
-  --surface-muted: #eef6ff;
+  --surface-elevated: #ffffff;
+  --surface-muted: #eef4fb;
   --text: #0f172a;
-  --muted: #64748b;
-  --border: #dbe4ee;
-  --primary: #166534;
-  --primary-strong: #14532d;
-  --accent: #1d4ed8;
+  --muted: #65758b;
+  --border: #d8e1ec;
+  --border-strong: #c7d2e0;
+  --primary: #14743e;
+  --primary-strong: #0f5f32;
+  --accent: #2563eb;
   --accent-soft: #38bdf8;
+  --shadow-soft: 0 18px 50px rgb(15 23 42 / 0.08);
+  --shadow-card: 0 1px 2px rgb(15 23 42 / 0.04), 0 14px 32px rgb(15 23 42 / 0.07);
+  --ring: color-mix(in srgb, var(--accent) 38%, transparent);
   --danger: #b91c1c;
   --danger-bg: #fef2f2;
   --danger-border: #fecaca;
@@ -24,16 +29,21 @@
 
 [data-theme="dark"] {
   color-scheme: dark;
-  --bg: #0b1220;
-  --surface: #111827;
-  --surface-muted: #172033;
-  --text: #e5e7eb;
-  --muted: #94a3b8;
-  --border: #1f2937;
-  --primary: #22c55e;
-  --primary-strong: #4ade80;
-  --accent: #60a5fa;
+  --bg: #080d18;
+  --surface: #101827;
+  --surface-elevated: #141e2f;
+  --surface-muted: #172235;
+  --text: #eef2f7;
+  --muted: #9aa8ba;
+  --border: #223047;
+  --border-strong: #30415c;
+  --primary: #44d47e;
+  --primary-strong: #86efac;
+  --accent: #7db4ff;
   --accent-soft: #38bdf8;
+  --shadow-soft: 0 22px 60px rgb(0 0 0 / 0.34);
+  --shadow-card: 0 1px 1px rgb(255 255 255 / 0.03), 0 20px 52px rgb(0 0 0 / 0.26);
+  --ring: color-mix(in srgb, var(--accent) 48%, transparent);
   --danger: #fca5a5;
   --danger-bg: #3b1414;
   --danger-border: #7f1d1d;
@@ -43,11 +53,11 @@
 }
 
 [data-palette="colorful"] {
-  --surface-muted: #f3e8ff;
-  --primary: #8b5cf6;
-  --primary-strong: #7c3aed;
-  --accent: #f59e0b;
-  --accent-soft: #06b6d4;
+  --surface-muted: #f1eaff;
+  --primary: #7c3aed;
+  --primary-strong: #6d28d9;
+  --accent: #d97706;
+  --accent-soft: #0891b2;
 }
 
 [data-theme="dark"][data-palette="colorful"] {
@@ -72,10 +82,15 @@ body {
   min-height: 100%;
   margin: 0;
   background:
-    radial-gradient(circle at top left, color-mix(in srgb, var(--primary) 14%, transparent), transparent 35%),
-    radial-gradient(circle at top right, color-mix(in srgb, var(--accent) 14%, transparent), transparent 32%),
+    radial-gradient(circle at 8% -8%, color-mix(in srgb, var(--primary) 14%, transparent), transparent 30rem),
+    radial-gradient(circle at 88% 0%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 28rem),
+    linear-gradient(180deg, color-mix(in srgb, var(--surface-muted) 32%, transparent), transparent 22rem),
     var(--bg);
   color: var(--text);
+  font-feature-settings:
+    "cv02" 1,
+    "cv03" 1,
+    "cv04" 1;
 }
 
 button,
@@ -105,7 +120,7 @@ textarea {
   width: 100%;
   max-width: 100%;
   min-height: 44px;
-  border-radius: 0.5rem;
+  border-radius: 0.65rem;
   color: var(--text);
   line-height: 1.4;
 }
@@ -127,6 +142,134 @@ textarea {
 }
 
 :focus-visible {
-  outline: 3px solid color-mix(in srgb, var(--accent) 60%, white);
+  outline: 3px solid var(--ring);
   outline-offset: 3px;
+}
+
+@layer components {
+  .page-stack {
+    @apply grid gap-6;
+  }
+
+  .page-hero {
+    @apply flex flex-col justify-between gap-4 rounded-xl border p-5 sm:p-6 md:flex-row md:items-end;
+    background:
+      linear-gradient(135deg, color-mix(in srgb, var(--surface) 94%, var(--primary)), var(--surface)),
+      var(--surface);
+    border-color: color-mix(in srgb, var(--border) 82%, transparent);
+    box-shadow: var(--shadow-card);
+  }
+
+  .eyebrow {
+    @apply text-xs font-extrabold uppercase tracking-[0.14em];
+    color: var(--primary);
+  }
+
+  .heading-xl {
+    @apply mt-2 text-3xl font-extrabold leading-tight tracking-[-0.02em] md:text-4xl;
+  }
+
+  .heading-lg {
+    @apply mt-2 text-2xl font-extrabold leading-tight tracking-[-0.015em];
+  }
+
+  .copy {
+    @apply mt-2 max-w-2xl text-sm leading-6;
+    color: var(--muted);
+  }
+
+  .premium-card {
+    @apply rounded-xl border;
+    background: linear-gradient(180deg, var(--surface-elevated), var(--surface));
+    border-color: color-mix(in srgb, var(--border) 88%, transparent);
+    box-shadow: var(--shadow-card);
+  }
+
+  .quiet-card {
+    @apply rounded-xl border;
+    background: color-mix(in srgb, var(--surface) 78%, var(--bg));
+    border-color: color-mix(in srgb, var(--border) 88%, transparent);
+  }
+
+  .section-card {
+    @apply premium-card p-5 sm:p-6;
+  }
+
+  .stat-card {
+    @apply premium-card p-5 transition duration-200;
+  }
+
+  .stat-card:hover {
+    transform: translateY(-1px);
+    border-color: color-mix(in srgb, var(--primary) 26%, var(--border));
+  }
+
+  .card-header {
+    @apply flex items-center justify-between gap-3 border-b px-4 py-3;
+    border-color: var(--border);
+  }
+
+  .primary-action {
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-4 text-sm font-extrabold text-white transition duration-200 disabled:cursor-not-allowed disabled:opacity-60;
+    background: linear-gradient(180deg, var(--primary), var(--primary-strong));
+    box-shadow: 0 10px 22px color-mix(in srgb, var(--primary) 24%, transparent);
+  }
+
+  .primary-action:hover {
+    filter: brightness(1.04);
+    transform: translateY(-1px);
+  }
+
+  .secondary-action {
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border px-4 text-sm font-extrabold transition duration-200 disabled:cursor-not-allowed disabled:opacity-60;
+    background: color-mix(in srgb, var(--surface) 92%, transparent);
+    border-color: var(--border);
+    color: var(--text);
+  }
+
+  .secondary-action:hover,
+  .icon-action:hover {
+    background: var(--surface-muted);
+    border-color: var(--border-strong);
+  }
+
+  .icon-action {
+    @apply inline-flex h-10 w-10 items-center justify-center rounded-lg border transition duration-200 disabled:cursor-not-allowed disabled:opacity-60;
+    background: color-mix(in srgb, var(--surface) 92%, transparent);
+    border-color: var(--border);
+    color: var(--muted);
+  }
+
+  .field-control {
+    @apply min-h-11 w-full rounded-lg border px-3 text-base outline-none transition;
+    background: color-mix(in srgb, var(--surface) 76%, var(--bg));
+    border-color: var(--border);
+  }
+
+  .field-control:focus {
+    border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
+    box-shadow: 0 0 0 4px var(--ring);
+  }
+
+  .pill {
+    @apply inline-flex items-center rounded-lg border px-3 py-2 text-xs font-extrabold;
+    background: var(--surface-muted);
+    border-color: var(--border);
+    color: var(--muted);
+  }
+
+  .subtle-panel {
+    @apply rounded-xl border p-4;
+    background: color-mix(in srgb, var(--bg) 72%, var(--surface));
+    border-color: var(--border);
+  }
+
+  .status-alert {
+    @apply rounded-xl border p-4 text-sm;
+  }
+
+  .progress-track {
+    @apply overflow-hidden rounded-full;
+    background: color-mix(in srgb, var(--surface-muted) 78%, var(--border));
+  }
 }
