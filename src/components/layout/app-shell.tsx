@@ -33,8 +33,16 @@ const mobileItems = [
   { label: "Add", href: "/transactions/new", icon: Plus },
   { label: "List", href: "/transactions", icon: ListChecks },
   { label: "Reports", href: "/reports", icon: BarChart3 },
+];
+
+const mobileMoreItems = [
+  { label: "Categories", href: "/categories", icon: Tags },
+  { label: "Advanced", href: "/advanced", icon: WalletCards },
+  { label: "Import / Export", href: "/import-export", icon: Upload },
   { label: "Settings", href: "/settings", icon: Settings },
 ];
+
+const mobileMoreNavId = "mobile-more-navigation";
 
 interface AppShellProps {
   activePath?: string;
@@ -57,6 +65,7 @@ export function AppShell({
   phaseLabel: _phaseLabel = "Phase 0",
   title = "Foundation and app shell",
 }: AppShellProps) {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(
     () =>
       typeof window !== "undefined" &&
@@ -178,6 +187,32 @@ export function AppShell({
       </main>
 
       <div className="fixed inset-x-0 bottom-0 z-20 border-t border-[var(--border)] bg-[var(--surface)]/94 px-3 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 shadow-soft backdrop-blur-xl lg:hidden">
+        {isMobileMenuOpen ? (
+          <nav
+            id={mobileMoreNavId}
+            aria-label="Mobile more navigation"
+            className="mb-2 rounded-xl border border-[var(--border)] bg-[var(--surface-elevated)] p-2 shadow-card"
+          >
+            <div className="grid grid-cols-2 gap-1">
+              {mobileMoreItems.map((item) => (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  prefetch
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  aria-current={
+                    isActivePath(item.href, activePath) ? "page" : undefined
+                  }
+                  className="flex min-h-11 items-center gap-2 rounded-lg px-3 text-sm font-extrabold text-[var(--muted)] transition hover:bg-[var(--surface-muted)] hover:text-[var(--text)] aria-[current=page]:bg-[var(--surface-muted)] aria-[current=page]:text-[var(--primary)]"
+                >
+                  <item.icon aria-hidden="true" size={17} />
+                  <span>{item.label}</span>
+                </Link>
+              ))}
+            </div>
+          </nav>
+        ) : null}
+
         <nav
           aria-label="Mobile navigation"
           className="grid grid-cols-5 gap-1"
@@ -196,6 +231,26 @@ export function AppShell({
               {item.label}
             </Link>
           ))}
+          <button
+            type="button"
+            aria-controls={mobileMoreNavId}
+            aria-expanded={isMobileMenuOpen}
+            aria-label={
+              isMobileMenuOpen
+                ? "Close more navigation options"
+                : "Open more navigation options"
+            }
+            onClick={() => setIsMobileMenuOpen((current) => !current)}
+            className={`flex min-h-12 flex-col items-center justify-center gap-1 rounded-lg text-[11px] font-extrabold transition ${
+              isMobileMenuOpen ||
+              mobileMoreItems.some((item) => isActivePath(item.href, activePath))
+                ? "bg-[var(--surface-muted)] text-[var(--primary)]"
+                : "text-[var(--muted)]"
+            }`}
+          >
+            <Menu aria-hidden="true" size={18} />
+            More
+          </button>
         </nav>
       </div>
     </div>

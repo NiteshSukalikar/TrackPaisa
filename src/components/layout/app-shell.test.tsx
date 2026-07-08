@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AppShell } from "@/components/layout/app-shell";
@@ -32,8 +32,25 @@ describe("AppShell responsive layout contract", () => {
     expect(screen.getByRole("navigation", { name: "Mobile navigation" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Transactions" })).toHaveAttribute("aria-current", "page");
     expect(screen.getByRole("link", { name: "List" })).toHaveAttribute("aria-current", "page");
+    expect(screen.getByRole("button", { name: "Open more navigation options" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Switch to dark mode" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Switch to colorful theme" })).toBeInTheDocument();
+  });
+
+  it("exposes secondary destinations from the mobile more menu", () => {
+    render(
+      <AppShell activePath="/import-export" phaseLabel="QA" title="Import / Export">
+        <p>Screen content</p>
+      </AppShell>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Open more navigation options" }));
+    const moreNavigation = within(screen.getByRole("navigation", { name: "Mobile more navigation" }));
+
+    expect(moreNavigation.getByRole("link", { name: "Import / Export" })).toHaveAttribute("aria-current", "page");
+    expect(moreNavigation.getByRole("link", { name: "Categories" })).toBeInTheDocument();
+    expect(moreNavigation.getByRole("link", { name: "Advanced" })).toBeInTheDocument();
+    expect(moreNavigation.getByRole("link", { name: "Settings" })).toBeInTheDocument();
   });
 
   it("keeps sidebar state separate from appearance state", () => {
