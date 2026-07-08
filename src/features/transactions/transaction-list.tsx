@@ -490,9 +490,9 @@ export function TransactionList() {
           </div>
         ) : (
           <>
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[860px] border-collapse text-sm">
-                <thead className="bg-[var(--surface-muted)] text-left text-xs uppercase tracking-[0.12em] text-[var(--muted)]">
+            <div>
+              <table className="w-full border-collapse text-sm">
+                <thead className="hidden bg-[var(--surface-muted)] text-left text-xs uppercase tracking-[0.12em] text-[var(--muted)] md:table-header-group">
                   <tr>
                     <Th>Transaction</Th>
                     <Th>Type</Th>
@@ -502,7 +502,7 @@ export function TransactionList() {
                     <Th align="right">Actions</Th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[var(--border)]">
+                <tbody className="grid gap-3 p-3 md:table-row-group md:divide-y md:divide-[var(--border)] md:p-0">
                   {pagedTransactions.map((transaction) => (
                     <TransactionTableRow
                       key={transaction.id}
@@ -619,8 +619,8 @@ function TransactionTableRow({
 
   return (
     <>
-      <tr className="transition hover:bg-[var(--surface-muted)]/45">
-        <Td>
+      <tr className="block overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-sm transition hover:bg-[var(--surface-muted)]/45 md:table-row md:rounded-none md:border-0 md:bg-transparent md:shadow-none">
+        <Td label="Transaction">
           <div className="flex min-w-0 items-start gap-3">
             <span
               className="mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-[var(--border)] shadow-sm"
@@ -646,20 +646,20 @@ function TransactionTableRow({
             </div>
           </div>
         </Td>
-        <Td>
+        <Td label="Type">
           <span className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2 py-1 text-xs font-bold capitalize text-[var(--muted)]">
             {transaction.type}
           </span>
         </Td>
-        <Td>{formatTransactionDate(transaction.date)}</Td>
-        <Td>{transaction.walletId ?? "No wallet"}</Td>
-        <Td align="right" strong>
+        <Td label="Date">{formatTransactionDate(transaction.date)}</Td>
+        <Td label="Wallet">{transaction.walletId ?? "No wallet"}</Td>
+        <Td align="right" label="Amount" strong>
           <span className={isIncome ? "text-[var(--primary)]" : "text-[var(--text)]"}>
             {isIncome ? "+" : "-"}
             {formatInr(transaction.amount)}
           </span>
         </Td>
-        <Td align="right">
+        <Td align="right" label="Actions">
           <RowActions
             id={`transaction-${transaction.id}`}
             isOpen={openActionId === `transaction-${transaction.id}`}
@@ -675,8 +675,8 @@ function TransactionTableRow({
       </tr>
 
       {isEditing && editDraft ? (
-        <tr>
-          <td colSpan={6} className="bg-[var(--surface-muted)]/45 p-4">
+        <tr className="block md:table-row">
+          <td colSpan={6} className="block bg-[var(--surface-muted)]/45 p-3 md:table-cell md:p-4">
             <form
               className="subtle-panel grid gap-4"
               onSubmit={(event) => {
@@ -910,15 +910,30 @@ function Th({
 function Td({
   align = "left",
   children,
+  label,
   strong = false,
 }: {
   align?: "left" | "right";
   children: React.ReactNode;
+  label?: string;
   strong?: boolean;
 }) {
   return (
-    <td className={`px-4 py-4 align-top ${align === "right" ? "text-right" : "text-left"} ${strong ? "font-bold" : ""}`}>
-      {children}
+    <td
+      className={`block border-t border-[var(--border)] px-4 py-3 align-top first:border-t-0 md:table-cell md:border-t-0 md:py-4 ${
+        align === "right" ? "md:text-right" : "text-left"
+      } ${strong ? "font-bold" : ""}`}
+    >
+      <div className={`${align === "right" ? "md:text-right" : ""}`}>
+        {label ? (
+          <span className="mb-2 block text-xs font-extrabold uppercase tracking-[0.12em] text-[var(--muted)] md:hidden">
+            {label}
+          </span>
+        ) : null}
+        <div className={`${align === "right" ? "text-right" : "text-left"} min-w-0`}>
+          {children}
+        </div>
+      </div>
     </td>
   );
 }
@@ -943,7 +958,7 @@ function Pagination({
       <span>
         {pageStart}-{pageEnd} of {count}, 10 per page
       </span>
-      <div className="flex gap-2">
+      <div className="grid grid-cols-2 gap-2 sm:flex">
         <button
           type="button"
           onClick={() => onPageChange(Math.max(1, page - 1))}

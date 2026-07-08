@@ -6,6 +6,7 @@ const advancedTrackingManager = readFileSync("src/features/advanced/advanced-tra
 const appShell = readFileSync("src/components/layout/app-shell.tsx", "utf8");
 const reportsDashboard = readFileSync("src/features/reports/reports-dashboard.tsx", "utf8");
 const rootLayout = readFileSync("src/app/layout.tsx", "utf8");
+const transactionList = readFileSync("src/features/transactions/transaction-list.tsx", "utf8");
 
 describe("responsive UI source invariants", () => {
   it("keeps mobile browser text, tap, and control sizing safeguards", () => {
@@ -43,5 +44,12 @@ describe("responsive UI source invariants", () => {
   it("keeps dense advanced and report form controls full width", () => {
     expect(advancedTrackingManager).toContain("min-h-11 w-full");
     expect(reportsDashboard).toContain("min-h-11 w-full");
+  });
+
+  it("keeps transaction list actions reachable without a mobile-only horizontal table", () => {
+    expect(transactionList).toContain("md:table-header-group");
+    expect(transactionList).toContain("md:table-row-group");
+    expect(transactionList).toContain("md:hidden");
+    expect(transactionList).not.toContain("min-w-[860px]");
   });
 });
