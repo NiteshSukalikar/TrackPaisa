@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { OverviewDashboard } from "@/features/overview/overview-dashboard";
@@ -6,6 +6,7 @@ import { defaultCategories } from "@/lib/constants/default-categories";
 import { listBudgetLimits } from "@/lib/db/repositories/advanced-tracking-repository";
 import { listCategories, seedDefaultCategories } from "@/lib/db/repositories/categories-repository";
 import { listTransactions } from "@/lib/db/repositories/transactions-repository";
+import { formatInr } from "@/lib/utils/currency";
 import { getMonthKey } from "@/lib/utils/transactions";
 
 vi.mock("@/lib/db/repositories/advanced-tracking-repository", () => ({
@@ -66,11 +67,90 @@ describe("OverviewDashboard", () => {
     render(<OverviewDashboard />);
 
     expect(await screen.findByText("Monthly spending trend")).toBeInTheDocument();
-    expect(screen.getByRole("img", { name: /Monthly spending trend ending/i })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: /Spending trend for This month/i })).toBeInTheDocument();
     expect(screen.getByText("Where your money went")).toBeInTheDocument();
     expect(screen.getAllByText("Food").length).toBeGreaterThan(0);
     expect(screen.getByText("Recent transactions")).toBeInTheDocument();
     expect(screen.getByText(/Groceries/)).toBeInTheDocument();
+  });
+
+  it("uses the selected range for overview income, expense, and net savings cards", async () => {
+    const monthKey = getMonthKey();
+    const previousMonthKey = getPreviousMonthKey(monthKey);
+
+    mockedListTransactions.mockResolvedValue([
+      {
+        id: "salary",
+        type: "income",
+        amount: 190000,
+        categoryId: "income-salary",
+        date: `${monthKey}-01`,
+        note: "Salary",
+        createdAt: `${monthKey}-01T08:00:00.000Z`,
+        updatedAt: `${monthKey}-01T08:00:00.000Z`,
+      },
+      {
+        id: "food",
+        type: "expense",
+        amount: 2400,
+        categoryId: "expense-food",
+        date: `${monthKey}-07`,
+        note: "Groceries",
+        createdAt: `${monthKey}-07T08:00:00.000Z`,
+        updatedAt: `${monthKey}-07T08:00:00.000Z`,
+      },
+      {
+        id: "older-rent",
+        type: "expense",
+        amount: 50000,
+        categoryId: "expense-rent",
+        date: `${previousMonthKey}-07`,
+        note: "Older rent",
+        createdAt: `${previousMonthKey}-07T08:00:00.000Z`,
+        updatedAt: `${previousMonthKey}-07T08:00:00.000Z`,
+      },
+    ]);
+
+    render(<OverviewDashboard />);
+
+    expect(await screen.findByText("Net savings")).toBeInTheDocument();
+    expect(screen.getByText(formatInr(190000))).toBeInTheDocument();
+    expect(screen.getAllByText(formatInr(2400)).length).toBeGreaterThan(0);
+    expect(screen.getByText(formatInr(187600))).toBeInTheDocument();
+    expect(screen.getAllByText("This month").length).toBeGreaterThanOrEqual(2);
+    expect(screen.queryByText(formatInr(52400))).not.toBeInTheDocument();
+  });
+
+  it("updates overview cards and category mix when the range changes", async () => {
+    const monthKey = getMonthKey();
+    const previousMonthKey = getPreviousMonthKey(monthKey);
+
+    mockedListTransactions.mockResolvedValue([
+      {
+        id: "salary",
+        type: "income",
+        amount: 190000,
+        categoryId: "income-salary",
+        date: `${monthKey}-01`,
+        note: "Salary",
+        createdAt: `${monthKey}-01T08:00:00.000Z`,
+        updatedAt: `${monthKey}-01T08:00:00.000Z`,
+      },
+      makeExpense("food", "expense-food", 2400, monthKey),
+      makeExpense("older-rent", "expense-rent", 50000, previousMonthKey),
+    ]);
+
+    render(<OverviewDashboard />);
+
+    expect((await screen.findAllByText("Food")).length).toBeGreaterThan(0);
+
+    fireEvent.click(screen.getByRole("tab", { name: /Last month/ }));
+
+    expect((await screen.findAllByText(formatInr(50000))).length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Rent").length).toBeGreaterThan(0);
+    await waitFor(() => {
+      expect(screen.queryByText("Food")).not.toBeInTheDocument();
+    });
   });
 
   it("renders every spending category in a scrollable category list", async () => {
@@ -154,4 +234,11 @@ function makeExpense(id: string, categoryId: string, amount: number, monthKey: s
     createdAt: `${monthKey}-07T08:00:00.000Z`,
     updatedAt: `${monthKey}-07T08:00:00.000Z`,
   };
+}
+
+function getPreviousMonthKey(monthKey: string) {
+  const [year, month] = monthKey.split("-").map(Number);
+  const date = new Date(year, month - 2, 1);
+
+  return getMonthKey(date);
 }

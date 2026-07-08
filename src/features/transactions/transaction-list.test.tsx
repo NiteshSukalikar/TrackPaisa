@@ -36,19 +36,6 @@ const mockedSeedDefaultCategories = vi.mocked(seedDefaultCategories);
 const mockedUpdateTransaction = vi.mocked(updateTransaction);
 const mockedDeleteTransaction = vi.mocked(deleteTransaction);
 
-function getCurrentMonthRange() {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth();
-  const monthKey = `${year}-${String(month + 1).padStart(2, "0")}`;
-  const lastDayOfMonth = new Date(year, month + 1, 0).getDate();
-
-  return {
-    dateFrom: `${monthKey}-01`,
-    dateTo: `${monthKey}-${String(lastDayOfMonth).padStart(2, "0")}`,
-  };
-}
-
 describe("TransactionList", () => {
   beforeEach(() => {
     mockedSeedDefaultCategories.mockReset();
@@ -133,8 +120,6 @@ describe("TransactionList", () => {
   });
 
   it("reloads through the repository when filters change", async () => {
-    const currentMonthRange = getCurrentMonthRange();
-
     render(<TransactionList />);
 
     await screen.findByText("July salary");
@@ -147,8 +132,8 @@ describe("TransactionList", () => {
       expect(mockedListTransactions).toHaveBeenLastCalledWith({
         type: "expense",
         categoryId: "expense-food",
-        dateFrom: currentMonthRange.dateFrom,
-        dateTo: currentMonthRange.dateTo,
+        dateFrom: undefined,
+        dateTo: undefined,
         search: "food",
         tag: undefined,
         walletId: undefined,

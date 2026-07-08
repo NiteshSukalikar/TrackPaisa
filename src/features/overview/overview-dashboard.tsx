@@ -25,8 +25,25 @@ import { formatInr } from "@/lib/utils/currency";
 import {
   type CategorySpendSummary,
   summarizeBudgetUsage,
-  summarizeMonthlyDashboard,
+  summarizeTransactions,
 } from "@/lib/utils/transactions";
+
+type OverviewRangeId =
+  | "this-week"
+  | "this-month"
+  | "last-month"
+  | "last-3-months"
+  | "last-6-months"
+  | "last-12-months";
+
+const overviewRangeOptions: Array<{ id: OverviewRangeId; label: string; shortLabel: string }> = [
+  { id: "this-week", label: "This week", shortLabel: "Week" },
+  { id: "this-month", label: "This month", shortLabel: "Month" },
+  { id: "last-month", label: "Last month", shortLabel: "Last" },
+  { id: "last-3-months", label: "Last 3 months", shortLabel: "3M" },
+  { id: "last-6-months", label: "Last 6 months", shortLabel: "6M" },
+  { id: "last-12-months", label: "Last 1 year", shortLabel: "1Y" },
+];
 
 export function OverviewDashboard() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -41,6 +58,8 @@ export function OverviewDashboard() {
   const [activePieCategoryId, setActivePieCategoryId] = useState<string | null>(
     null,
   );
+  const [selectedRangeId, setSelectedRangeId] =
+    useState<OverviewRangeId>("this-month");
 
   useEffect(() => {
     let isMounted = true;
@@ -86,9 +105,13 @@ export function OverviewDashboard() {
     () => new Map(categories.map((category) => [category.id, category])),
     [categories],
   );
+  const selectedRange = useMemo(
+    () => getOverviewDateRange(selectedRangeId),
+    [selectedRangeId],
+  );
   const dashboard = useMemo(
-    () => summarizeMonthlyDashboard(transactions, categories),
-    [transactions, categories],
+    () => summarizeRangeDashboard(transactions, categories, selectedRange),
+    [transactions, categories, selectedRange],
   );
   const filteredCategorySpend = useMemo(() => {
     const search = categorySearch.trim().toLocaleLowerCase("en-IN");
@@ -127,23 +150,23 @@ export function OverviewDashboard() {
         transactions,
         categories,
         budgets,
-        dashboard.monthKey,
+        selectedRange.budgetMonthKey,
       ),
-    [transactions, categories, budgets, dashboard.monthKey],
+    [transactions, categories, budgets, selectedRange.budgetMonthKey],
   );
-  const monthlyExpenseTrend = useMemo(
-    () => getMonthlyExpenseTrend(transactions, categories, dashboard.monthKey),
-    [transactions, categories, dashboard.monthKey],
+  const expenseTrend = useMemo(
+    () => getExpenseTrend(transactions, categories, selectedRange),
+    [transactions, categories, selectedRange],
   );
-  const highestMonthlyExpense = Math.max(
+  const highestTrendExpense = Math.max(
     1,
-    ...monthlyExpenseTrend.map((month) => month.expense),
+    ...expenseTrend.map((point) => point.expense),
   );
-  const monthlyTrendInsight = useMemo(
-    () => getMonthlyTrendInsight(monthlyExpenseTrend, dashboard.monthKey),
-    [monthlyExpenseTrend, dashboard.monthKey],
+  const trendInsight = useMemo(
+    () => getTrendInsight(expenseTrend, selectedRange),
+    [expenseTrend, selectedRange],
   );
-  const monthLabel = formatMonthLabel(dashboard.monthKey);
+  const periodLabel = selectedRange.label;
 
   if (isLoading) {
     return (
@@ -179,13 +202,13 @@ export function OverviewDashboard() {
     {
       label: "Income",
       value: formatInr(dashboard.income),
-      detail: monthLabel,
+      detail: periodLabel,
       icon: ArrowUpRight,
     },
     {
       label: "Expense",
       value: formatInr(dashboard.expense),
-      detail: monthLabel,
+      detail: periodLabel,
       icon: ArrowDownLeft,
     },
     {
@@ -199,7 +222,7 @@ export function OverviewDashboard() {
       value: dashboard.topSpendingCategory?.name ?? "None yet",
       detail: dashboard.topSpendingCategory
         ? formatInr(dashboard.topSpendingCategory.total)
-        : "No expenses this month",
+        : `No expenses in ${periodLabel.toLocaleLowerCase("en-IN")}`,
       icon: Wallet,
     },
   ];
@@ -209,10 +232,10 @@ export function OverviewDashboard() {
       <section className="page-hero">
         <div>
           <p className="eyebrow">
-            Your month at a glance
+            Your money at a glance
           </p>
           <h2 className="heading-xl">
-            {monthLabel}
+            {periodLabel}
           </h2>
           <p className="copy">
             Totals are calculated from transactions stored locally on this
@@ -226,6 +249,44 @@ export function OverviewDashboard() {
           <ListChecks aria-hidden="true" size={18} />
           Add transaction
         </a>
+      </section>
+
+      <section className="section-card grid gap-3">
+        <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+          <div>
+            <p className="eyebrow">Insights range</p>
+            <h3 className="mt-2 text-lg font-extrabold">
+              Filter spending trend and category mix
+            </h3>
+          </div>
+          <div
+            className="flex gap-2 overflow-x-auto rounded-xl border border-[var(--border)] bg-[var(--bg)] p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            role="tablist"
+            aria-label="Overview date range"
+          >
+            {overviewRangeOptions.map((option) => (
+              <button
+                key={option.id}
+                type="button"
+                role="tab"
+                aria-selected={selectedRangeId === option.id}
+                onClick={() => {
+                  setSelectedRangeId(option.id);
+                  setCategorySearch("");
+                  setActivePieCategoryId(null);
+                }}
+                className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-lg px-3 text-xs font-extrabold text-[var(--muted)] transition aria-selected:bg-[var(--surface)] aria-selected:text-[var(--primary)] aria-selected:shadow-sm sm:text-sm"
+              >
+                <span className="sm:hidden">{option.shortLabel}</span>
+                <span className="hidden sm:inline">{option.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+        <p className="text-sm leading-6 text-[var(--muted)]">
+          Showing transactions from {formatDisplayDate(selectedRange.from)} to{" "}
+          {formatDisplayDate(selectedRange.to)}.
+        </p>
       </section>
 
       <section
@@ -260,13 +321,17 @@ export function OverviewDashboard() {
           <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
             <div>
               <p className="eyebrow">
-                This month
+                {periodLabel}
               </p>
               <h3 className="mt-2 text-lg font-extrabold">Monthly spending trend</h3>
             </div>
             <div className="flex flex-wrap gap-2">
               <span className="pill">
-                Last 6 months
+                {selectedRange.trendKind === "daily"
+                  ? "Daily"
+                  : selectedRange.trendKind === "weekly"
+                    ? "Weekly"
+                    : "Monthly"}
               </span>
               <span className="pill">
                 Expenses
@@ -277,13 +342,13 @@ export function OverviewDashboard() {
           <div className="mt-5 grid gap-3 md:grid-cols-[1.15fr_0.85fr]">
             <div className="subtle-panel">
               <p className="text-sm font-bold text-[var(--muted)]">
-                {monthLabel} expense
+                {periodLabel} expense
               </p>
               <p className="mt-2 text-2xl font-extrabold">
-                {formatInr(monthlyTrendInsight.current.expense)}
+                {formatInr(dashboard.expense)}
               </p>
               <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-                {monthlyTrendInsight.comparisonText}
+                {trendInsight.comparisonText}
               </p>
             </div>
             <div className="subtle-panel">
@@ -291,11 +356,11 @@ export function OverviewDashboard() {
                 Main driver
               </p>
               <p className="mt-2 truncate text-lg font-extrabold">
-                {monthlyTrendInsight.current.topCategoryName ??
+                {trendInsight.current.topCategoryName ??
                   "No expense yet"}
               </p>
               <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-                {monthlyTrendInsight.driverText}
+                {trendInsight.driverText}
               </p>
             </div>
           </div>
@@ -303,18 +368,17 @@ export function OverviewDashboard() {
           <div
             className="subtle-panel mt-3 grid min-h-72 gap-4 px-3 pb-4 pt-5"
             role="img"
-            aria-label={`Monthly spending trend ending ${monthLabel}. ${monthlyTrendInsight.accessibleSummary}`}
+            aria-label={`Spending trend for ${periodLabel}. ${trendInsight.accessibleSummary}`}
           >
             <div className="grid gap-2 text-sm sm:grid-cols-3">
               <span className="rounded-lg bg-[var(--surface-muted)] px-3 py-2 font-bold text-[var(--muted)]">
-                6-month avg: {formatInr(monthlyTrendInsight.averageExpense)}
+                Avg: {formatInr(trendInsight.averageExpense)}
               </span>
               <span className="rounded-lg bg-[var(--surface-muted)] px-3 py-2 font-bold text-[var(--muted)]">
-                Peak: {formatShortMonthLabel(monthlyTrendInsight.peak.monthKey)}{" "}
-                {formatInr(monthlyTrendInsight.peak.expense)}
+                Peak: {trendInsight.peak.label} {formatInr(trendInsight.peak.expense)}
               </span>
               <span className="rounded-lg bg-[var(--surface-muted)] px-3 py-2 font-bold text-[var(--muted)]">
-                {monthlyTrendInsight.current.expenseCount} expense entries
+                {dashboard.transactionCount} records
               </span>
             </div>
             <div className="relative flex h-52 items-end gap-3 overflow-hidden rounded-lg bg-[linear-gradient(180deg,color-mix(in_srgb,var(--surface-muted)_64%,transparent),transparent)] px-3 pb-8 pt-4">
@@ -322,76 +386,72 @@ export function OverviewDashboard() {
                 aria-hidden="true"
                 className="absolute left-3 right-3 border-t border-dashed border-[var(--muted)]/50"
                 style={{
-                  bottom: `${32 + Math.min((monthlyTrendInsight.averageExpense / highestMonthlyExpense) * 100, 100) * 1.44}px`,
+                  bottom: `${32 + Math.min((trendInsight.averageExpense / highestTrendExpense) * 100, 100) * 1.44}px`,
                 }}
               />
               <span
                 aria-hidden="true"
                 className="absolute right-0 rounded bg-[var(--surface)] px-2 text-[0.68rem] font-bold text-[var(--muted)]"
                 style={{
-                  bottom: `${28 + Math.min((monthlyTrendInsight.averageExpense / highestMonthlyExpense) * 100, 100) * 1.44}px`,
+                  bottom: `${28 + Math.min((trendInsight.averageExpense / highestTrendExpense) * 100, 100) * 1.44}px`,
                 }}
               >
                 avg
               </span>
-              {monthlyExpenseTrend.map((month) => {
+              {expenseTrend.map((point) => {
                 const heightPercent =
-                  month.expense > 0
+                  point.expense > 0
                     ? Math.max(
-                        (month.expense / highestMonthlyExpense) * 100,
+                        (point.expense / highestTrendExpense) * 100,
                         12,
                       )
                     : 4;
-                const isCurrentMonth = month.monthKey === dashboard.monthKey;
-                const isPeakMonth =
-                  month.monthKey === monthlyTrendInsight.peak.monthKey &&
-                  month.expense > 0;
+                const isCurrentPoint = point.key === trendInsight.current.key;
+                const isPeakPoint =
+                  point.key === trendInsight.peak.key && point.expense > 0;
 
                 return (
                   <div
-                    key={month.monthKey}
+                    key={point.key}
                     className="relative flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-2"
                   >
                     <span
-                      className={`max-w-full truncate text-[0.68rem] font-bold ${month.expense > 0 ? "text-[var(--text)]" : "text-[var(--muted)]"}`}
+                      className={`max-w-full truncate text-[0.68rem] font-bold ${point.expense > 0 ? "text-[var(--text)]" : "text-[var(--muted)]"}`}
                     >
-                      {month.expense > 0
-                        ? formatCompactInr(month.expense)
+                      {point.expense > 0
+                        ? formatCompactInr(point.expense)
                         : "-"}
                     </span>
                     <div
                       className={`relative w-full rounded-t-lg rounded-b-sm ${
-                        isCurrentMonth
+                        isCurrentPoint
                           ? "bg-[var(--primary)] ring-2 ring-[var(--primary)]/30"
-                          : month.expense > 0
+                          : point.expense > 0
                             ? "bg-[var(--accent)]/80"
                             : "bg-[var(--border)]"
                       }`}
                       style={{ height: `${heightPercent}%` }}
-                      title={`${formatMonthLabel(month.monthKey)}: ${formatInr(month.expense)}`}
+                      title={`${point.longLabel}: ${formatInr(point.expense)}`}
                     >
                       <span className="sr-only">
-                        {formatMonthLabel(month.monthKey)} expense{" "}
-                        {formatInr(month.expense)}
-                        {isCurrentMonth ? ", selected month" : ""}
-                        {isPeakMonth ? ", highest month" : ""}
+                        {point.longLabel} expense {formatInr(point.expense)}
+                        {isCurrentPoint ? ", selected period" : ""}
+                        {isPeakPoint ? ", highest period" : ""}
                       </span>
                     </div>
                     <span
-                      className={`absolute bottom-[-1.55rem] text-xs font-bold ${isCurrentMonth ? "text-[var(--primary)]" : "text-[var(--muted)]"}`}
+                      className={`absolute bottom-[-1.55rem] text-xs font-bold ${isCurrentPoint ? "text-[var(--primary)]" : "text-[var(--muted)]"}`}
                     >
-                      {formatShortMonthLabel(month.monthKey)}
+                      {point.label}
                     </span>
                   </div>
                 );
               })}
             </div>
-            {monthlyTrendInsight.recordedMonthCount <= 1 ? (
+            {trendInsight.recordedPointCount <= 1 ? (
                 <p className="rounded-lg border border-dashed border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm leading-6 text-[var(--muted)]">
-                Only{" "}
-                {formatShortMonthLabel(monthlyTrendInsight.current.monthKey)}{" "}
-                has saved expenses in this six-month view, so this is a starting
-                point rather than a real trend yet.
+                Only {trendInsight.current.label} has saved expenses in this
+                view, so this is a starting point rather than a real trend yet.
               </p>
             ) : null}
           </div>
@@ -402,7 +462,7 @@ export function OverviewDashboard() {
               size={18}
               className="mt-0.5 shrink-0 text-[var(--accent)]"
             />
-            <p>{monthlyTrendInsight.storyText}</p>
+            <p>{trendInsight.storyText}</p>
           </div>
         </article>
 
@@ -444,7 +504,7 @@ export function OverviewDashboard() {
 
           {dashboard.categorySpend.length === 0 ? (
             <p className="mt-4 text-sm leading-6 text-[var(--muted)]">
-              No expenses saved for this month yet.
+              No expenses saved for {periodLabel.toLocaleLowerCase("en-IN")} yet.
             </p>
           ) : (
             <div className="mt-4 grid gap-4">
@@ -616,7 +676,7 @@ export function OverviewDashboard() {
                             {Math.round(
                               (category.total / categoryPieTotal) * 100,
                             )}
-                            % of this month
+                            % of {periodLabel.toLocaleLowerCase("en-IN")}
                           </p>
                         </li>
                       ))}
@@ -726,6 +786,371 @@ export function OverviewDashboard() {
   );
 }
 
+interface OverviewDateRange {
+  budgetMonthKey: string;
+  from: string;
+  id: OverviewRangeId;
+  label: string;
+  to: string;
+  trendKind: "daily" | "monthly" | "weekly";
+}
+
+interface RangeDashboardSummary {
+  categorySpend: CategorySpendSummary[];
+  expense: number;
+  income: number;
+  netSavings: number;
+  recentTransactions: Transaction[];
+  savingsRate: number;
+  topSpendingCategory?: CategorySpendSummary;
+  transactionCount: number;
+}
+
+interface ExpenseTrendPoint {
+  expense: number;
+  expenseCount: number;
+  key: string;
+  label: string;
+  longLabel: string;
+  topCategoryName?: string;
+  topCategoryTotal: number;
+}
+
+function getOverviewDateRange(rangeId: OverviewRangeId, today = new Date()): OverviewDateRange {
+  const current = startOfDay(today);
+  const currentMonthStart = new Date(current.getFullYear(), current.getMonth(), 1);
+  const currentMonthKey = getMonthKeyFromDate(currentMonthStart);
+
+  if (rangeId === "this-week") {
+    const from = startOfWeek(current);
+
+    return {
+      budgetMonthKey: currentMonthKey,
+      from: toIsoDate(from),
+      id: rangeId,
+      label: "This week",
+      to: toIsoDate(current),
+      trendKind: "daily",
+    };
+  }
+
+  if (rangeId === "last-month") {
+    const from = new Date(current.getFullYear(), current.getMonth() - 1, 1);
+    const to = new Date(current.getFullYear(), current.getMonth(), 0);
+
+    return {
+      budgetMonthKey: getMonthKeyFromDate(from),
+      from: toIsoDate(from),
+      id: rangeId,
+      label: "Last month",
+      to: toIsoDate(to),
+      trendKind: "weekly",
+    };
+  }
+
+  if (rangeId === "last-3-months" || rangeId === "last-6-months" || rangeId === "last-12-months") {
+    const monthCount =
+      rangeId === "last-3-months" ? 3 : rangeId === "last-6-months" ? 6 : 12;
+    const from = new Date(current.getFullYear(), current.getMonth() - (monthCount - 1), 1);
+
+    return {
+      budgetMonthKey: currentMonthKey,
+      from: toIsoDate(from),
+      id: rangeId,
+      label:
+        rangeId === "last-3-months"
+          ? "Last 3 months"
+          : rangeId === "last-6-months"
+            ? "Last 6 months"
+            : "Last 1 year",
+      to: toIsoDate(current),
+      trendKind: "monthly",
+    };
+  }
+
+  return {
+    budgetMonthKey: currentMonthKey,
+    from: toIsoDate(currentMonthStart),
+    id: rangeId,
+    label: "This month",
+    to: toIsoDate(current),
+    trendKind: "weekly",
+  };
+}
+
+function summarizeRangeDashboard(
+  transactions: Transaction[],
+  categories: Category[],
+  range: OverviewDateRange,
+): RangeDashboardSummary {
+  const rangeTransactions = filterTransactionsByRange(transactions, range);
+  const categoryById = new Map(categories.map((category) => [category.id, category]));
+  const spendByCategory = new Map<string, CategorySpendSummary>();
+
+  for (const transaction of rangeTransactions) {
+    if (transaction.type !== "expense") {
+      continue;
+    }
+
+    const category = categoryById.get(transaction.categoryId);
+    const existing = spendByCategory.get(transaction.categoryId);
+
+    spendByCategory.set(transaction.categoryId, {
+      categoryId: transaction.categoryId,
+      color: category?.color ?? "#64748B",
+      count: (existing?.count ?? 0) + 1,
+      name: category?.name ?? "Uncategorized",
+      total: (existing?.total ?? 0) + transaction.amount,
+    });
+  }
+
+  const categorySpend = [...spendByCategory.values()].sort((first, second) => {
+    if (second.total !== first.total) {
+      return second.total - first.total;
+    }
+
+    return first.name.localeCompare(second.name);
+  });
+
+  return {
+    ...summarizeTransactions(rangeTransactions),
+    categorySpend,
+    recentTransactions: sortTransactionsNewestFirst(rangeTransactions).slice(0, 5),
+    topSpendingCategory: categorySpend[0],
+    transactionCount: rangeTransactions.length,
+  };
+}
+
+function filterTransactionsByRange(transactions: Transaction[], range: OverviewDateRange) {
+  return transactions.filter(
+    (transaction) => transaction.date >= range.from && transaction.date <= range.to,
+  );
+}
+
+function getExpenseTrend(
+  transactions: Transaction[],
+  categories: Category[],
+  range: OverviewDateRange,
+): ExpenseTrendPoint[] {
+  if (range.trendKind === "daily") {
+    return getDailyExpenseTrend(transactions, categories, range);
+  }
+
+  if (range.trendKind === "weekly") {
+    return getWeeklyExpenseTrend(transactions, categories, range);
+  }
+
+  return getMonthlyExpenseTrendForRange(transactions, categories, range);
+}
+
+function getDailyExpenseTrend(
+  transactions: Transaction[],
+  categories: Category[],
+  range: OverviewDateRange,
+) {
+  const from = parseIsoDate(range.from);
+  const to = parseIsoDate(range.to);
+  const dayCount = Math.max(1, daysBetween(from, to) + 1);
+
+  return Array.from({ length: dayCount }, (_, index) => {
+    const date = addDays(from, index);
+    const isoDate = toIsoDate(date);
+
+    return buildExpenseTrendPoint({
+      categories,
+      key: isoDate,
+      label: new Intl.DateTimeFormat("en-IN", { weekday: "short" }).format(date),
+      longLabel: formatDisplayDate(isoDate),
+      transactions: transactions.filter((transaction) => transaction.date === isoDate),
+    });
+  });
+}
+
+function getWeeklyExpenseTrend(
+  transactions: Transaction[],
+  categories: Category[],
+  range: OverviewDateRange,
+) {
+  const from = parseIsoDate(range.from);
+  const to = parseIsoDate(range.to);
+  const points: ExpenseTrendPoint[] = [];
+  let weekStart = new Date(from);
+  let weekIndex = 1;
+
+  while (weekStart <= to) {
+    const weekEnd = new Date(Math.min(addDays(weekStart, 6).getTime(), to.getTime()));
+    const fromIso = toIsoDate(weekStart);
+    const toIso = toIsoDate(weekEnd);
+
+    points.push(
+      buildExpenseTrendPoint({
+        categories,
+        key: `${fromIso}_${toIso}`,
+        label: `W${weekIndex}`,
+        longLabel: `${formatDisplayDate(fromIso)} - ${formatDisplayDate(toIso)}`,
+        transactions: transactions.filter(
+          (transaction) => transaction.date >= fromIso && transaction.date <= toIso,
+        ),
+      }),
+    );
+
+    weekStart = addDays(weekStart, 7);
+    weekIndex += 1;
+  }
+
+  return points;
+}
+
+function getMonthlyExpenseTrendForRange(
+  transactions: Transaction[],
+  categories: Category[],
+  range: OverviewDateRange,
+) {
+  const from = parseIsoDate(range.from);
+  const to = parseIsoDate(range.to);
+  const points: ExpenseTrendPoint[] = [];
+  let monthCursor = new Date(from.getFullYear(), from.getMonth(), 1);
+
+  while (monthCursor <= to) {
+    const monthStart = new Date(monthCursor);
+    const monthEnd = new Date(monthCursor.getFullYear(), monthCursor.getMonth() + 1, 0);
+    const fromIso = toIsoDate(monthStart);
+    const toIso = toIsoDate(new Date(Math.min(monthEnd.getTime(), to.getTime())));
+    const monthKey = getMonthKeyFromDate(monthCursor);
+
+    points.push(
+      buildExpenseTrendPoint({
+        categories,
+        key: monthKey,
+        label: formatShortMonthLabel(monthKey),
+        longLabel: formatMonthLabel(monthKey),
+        transactions: transactions.filter(
+          (transaction) => transaction.date >= fromIso && transaction.date <= toIso,
+        ),
+      }),
+    );
+
+    monthCursor = new Date(monthCursor.getFullYear(), monthCursor.getMonth() + 1, 1);
+  }
+
+  return points;
+}
+
+function buildExpenseTrendPoint({
+  categories,
+  key,
+  label,
+  longLabel,
+  transactions,
+}: {
+  categories: Category[];
+  key: string;
+  label: string;
+  longLabel: string;
+  transactions: Transaction[];
+}): ExpenseTrendPoint {
+  const categoryById = new Map(categories.map((category) => [category.id, category]));
+  const expenses = transactions.filter((transaction) => transaction.type === "expense");
+  const categorySpend = new Map<string, number>();
+  const expense = expenses.reduce((total, transaction) => {
+    categorySpend.set(
+      transaction.categoryId,
+      (categorySpend.get(transaction.categoryId) ?? 0) + transaction.amount,
+    );
+
+    return total + transaction.amount;
+  }, 0);
+  const topCategory = [...categorySpend.entries()].sort(
+    (first, second) => second[1] - first[1],
+  )[0];
+
+  return {
+    expense,
+    expenseCount: expenses.length,
+    key,
+    label,
+    longLabel,
+    topCategoryName: topCategory
+      ? (categoryById.get(topCategory[0])?.name ?? "Uncategorized")
+      : undefined,
+    topCategoryTotal: topCategory?.[1] ?? 0,
+  };
+}
+
+function getTrendInsight(trend: ExpenseTrendPoint[], range: OverviewDateRange) {
+  const current = trend[trend.length - 1] ?? {
+    expense: 0,
+    expenseCount: 0,
+    key: range.to,
+    label: range.label,
+    longLabel: range.label,
+    topCategoryTotal: 0,
+  };
+  const previous = trend.length > 1 ? trend[trend.length - 2] : undefined;
+  const recordedPointCount = trend.filter((point) => point.expense > 0).length;
+  const averageExpense =
+    trend.length > 0
+      ? Math.round(
+          trend.reduce((total, point) => total + point.expense, 0) / trend.length,
+        )
+      : 0;
+  const peak = trend.reduce(
+    (highest, point) => (point.expense > highest.expense ? point : highest),
+    trend[0] ?? current,
+  );
+
+  let comparisonText = "No previous period expense is available yet.";
+
+  if (previous && previous.expense > 0 && current.expense > 0) {
+    const difference = current.expense - previous.expense;
+    const percent = Math.round((Math.abs(difference) / previous.expense) * 100);
+
+    comparisonText =
+      difference === 0
+        ? `Same as ${previous.longLabel}.`
+        : `${formatInr(Math.abs(difference))} ${difference > 0 ? "higher" : "lower"} than ${previous.longLabel} (${percent}%).`;
+  } else if (previous && previous.expense > 0) {
+    comparisonText = `No ${current.longLabel} expense yet; ${previous.longLabel} was ${formatInr(previous.expense)}.`;
+  } else if (current.expense > 0) {
+    comparisonText = "This is the first period in the trend with saved expenses.";
+  }
+
+  const driverText = current.topCategoryName
+    ? `${formatInr(current.topCategoryTotal)} from ${current.topCategoryName}.`
+    : `Add an expense in ${range.label.toLocaleLowerCase("en-IN")} to see what is driving the period.`;
+  const storyText =
+    current.expense === 0
+      ? `${range.label} has no expenses saved, so the chart cannot explain a spending pattern yet.`
+      : `${current.longLabel} is ${current.key === peak.key ? "the highest point" : `below the ${peak.label} peak`} and ${current.expense >= averageExpense ? "above" : "below"} the selected-range average. ${driverText}`;
+  const accessibleSummary =
+    current.expense === 0
+      ? `${range.label} has no saved expenses.`
+      : `${current.longLabel} expense is ${formatInr(current.expense)} across ${current.expenseCount} entries. Peak is ${peak.longLabel} at ${formatInr(peak.expense)}.`;
+
+  return {
+    averageExpense,
+    comparisonText,
+    current,
+    driverText,
+    peak,
+    recordedPointCount,
+    storyText,
+    accessibleSummary,
+  };
+}
+
+function sortTransactionsNewestFirst(transactions: Transaction[]) {
+  return [...transactions].sort((first, second) => {
+    const dateComparison = second.date.localeCompare(first.date);
+
+    if (dateComparison !== 0) {
+      return dateComparison;
+    }
+
+    return second.createdAt.localeCompare(first.createdAt);
+  });
+}
+
 function formatMonthLabel(monthKey: string) {
   return new Intl.DateTimeFormat("en-IN", {
     month: "long",
@@ -807,129 +1232,54 @@ function formatTransactionDate(value: string) {
   }).format(new Date(`${value}T00:00:00`));
 }
 
-interface MonthlyExpenseTrendPoint {
-  expense: number;
-  expenseCount: number;
-  monthKey: string;
-  topCategoryName?: string;
-  topCategoryTotal: number;
-}
-
-function getMonthlyExpenseTrend(
-  transactions: Transaction[],
-  categories: Category[],
-  currentMonthKey: string,
-  monthCount = 6,
-): MonthlyExpenseTrendPoint[] {
-  const currentMonth = new Date(`${currentMonthKey}-01T00:00:00`);
-  const categoryById = new Map(
-    categories.map((category) => [category.id, category]),
-  );
-
-  return Array.from({ length: monthCount }, (_, index) => {
-    const month = new Date(
-      currentMonth.getFullYear(),
-      currentMonth.getMonth() - (monthCount - index - 1),
-      1,
-    );
-    const monthKey = getMonthKeyFromDate(month);
-    const monthlyExpenses = transactions.filter(
-      (transaction) =>
-        transaction.type === "expense" && transaction.date.startsWith(monthKey),
-    );
-    const categorySpend = new Map<string, number>();
-    const expense = monthlyExpenses.reduce((total, transaction) => {
-      categorySpend.set(
-        transaction.categoryId,
-        (categorySpend.get(transaction.categoryId) ?? 0) + transaction.amount,
-      );
-
-      return total + transaction.amount;
-    }, 0);
-    const topCategory = [...categorySpend.entries()].sort(
-      (first, second) => second[1] - first[1],
-    )[0];
-
-    return {
-      expense,
-      expenseCount: monthlyExpenses.length,
-      monthKey,
-      topCategoryName: topCategory
-        ? (categoryById.get(topCategory[0])?.name ?? "Uncategorized")
-        : undefined,
-      topCategoryTotal: topCategory?.[1] ?? 0,
-    };
-  });
-}
-
-function getMonthlyTrendInsight(
-  trend: MonthlyExpenseTrendPoint[],
-  currentMonthKey: string,
-) {
-  const current =
-    trend.find((month) => month.monthKey === currentMonthKey) ??
-    trend[trend.length - 1];
-  const currentIndex = trend.findIndex(
-    (month) => month.monthKey === current.monthKey,
-  );
-  const previous = currentIndex > 0 ? trend[currentIndex - 1] : undefined;
-  const recordedMonthCount = trend.filter((month) => month.expense > 0).length;
-  const averageExpense =
-    trend.length > 0
-      ? Math.round(
-          trend.reduce((total, month) => total + month.expense, 0) /
-            trend.length,
-        )
-      : 0;
-  const peak = trend.reduce(
-    (highest, month) => (month.expense > highest.expense ? month : highest),
-    trend[0] ?? current,
-  );
-  const currentMonthLabel = formatMonthLabel(current.monthKey);
-
-  let comparisonText = "No previous month expense is available yet.";
-
-  if (previous && previous.expense > 0 && current.expense > 0) {
-    const difference = current.expense - previous.expense;
-    const percent = Math.round((Math.abs(difference) / previous.expense) * 100);
-    comparisonText =
-      difference === 0
-        ? `Same as ${formatMonthLabel(previous.monthKey)}.`
-        : `${formatInr(Math.abs(difference))} ${difference > 0 ? "higher" : "lower"} than ${formatMonthLabel(previous.monthKey)} (${percent}%).`;
-  } else if (previous && previous.expense > 0) {
-    comparisonText = `No ${currentMonthLabel} expense yet; ${formatMonthLabel(previous.monthKey)} was ${formatInr(previous.expense)}.`;
-  } else if (current.expense > 0) {
-    comparisonText =
-      "This is the first month in the trend with saved expenses.";
-  }
-
-  const driverText = current.topCategoryName
-    ? `${formatInr(current.topCategoryTotal)} from ${current.topCategoryName}.`
-    : `Add an expense in ${currentMonthLabel} to see what is driving the month.`;
-  const storyText =
-    current.expense === 0
-      ? `${currentMonthLabel} has no expenses saved, so the chart cannot explain a spending pattern yet.`
-      : `${currentMonthLabel} is ${current.monthKey === peak.monthKey ? "the highest month" : `below the ${formatShortMonthLabel(peak.monthKey)} peak`} and ${current.expense >= averageExpense ? "above" : "below"} the six-month average. ${driverText}`;
-  const accessibleSummary =
-    current.expense === 0
-      ? `${currentMonthLabel} has no saved expenses.`
-      : `${currentMonthLabel} expense is ${formatInr(current.expense)} across ${current.expenseCount} entries. Peak month is ${formatMonthLabel(peak.monthKey)} at ${formatInr(peak.expense)}.`;
-
-  return {
-    averageExpense,
-    comparisonText,
-    current,
-    driverText,
-    peak,
-    recordedMonthCount,
-    storyText,
-    accessibleSummary,
-  };
-}
-
 function getMonthKeyFromDate(date: Date) {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
 
   return `${year}-${month}`;
+}
+
+function startOfDay(date: Date) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+function startOfWeek(date: Date) {
+  const day = date.getDay();
+  const mondayOffset = day === 0 ? -6 : 1 - day;
+
+  return addDays(startOfDay(date), mondayOffset);
+}
+
+function addDays(date: Date, days: number) {
+  const nextDate = new Date(date);
+
+  nextDate.setDate(nextDate.getDate() + days);
+
+  return nextDate;
+}
+
+function daysBetween(from: Date, to: Date) {
+  const dayMs = 24 * 60 * 60 * 1000;
+
+  return Math.round((startOfDay(to).getTime() - startOfDay(from).getTime()) / dayMs);
+}
+
+function parseIsoDate(value: string) {
+  return new Date(`${value}T00:00:00`);
+}
+
+function toIsoDate(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+function formatDisplayDate(value: string) {
+  return new Intl.DateTimeFormat("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).format(parseIsoDate(value));
 }
