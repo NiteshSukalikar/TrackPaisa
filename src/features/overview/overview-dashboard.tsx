@@ -1,6 +1,15 @@
 "use client";
 
-import { ArrowDownLeft, ArrowUpRight, CalendarDays, ListChecks, PiggyBank, Wallet } from "lucide-react";
+import {
+  ArrowDownLeft,
+  ArrowUpRight,
+  BarChart3,
+  ChartPie,
+  ListChecks,
+  PiggyBank,
+  Wallet,
+} from "lucide-react";
+import React from "react";
 import { useEffect, useMemo, useState } from "react";
 import { EmptyOverview } from "@/features/overview/empty-overview";
 import { listBudgetLimits } from "@/lib/db/repositories/advanced-tracking-repository";
@@ -68,6 +77,11 @@ export function OverviewDashboard() {
     () => summarizeBudgetUsage(transactions, categories, budgets, dashboard.monthKey),
     [transactions, categories, budgets, dashboard.monthKey],
   );
+  const monthlyExpenseTrend = useMemo(
+    () => getMonthlyExpenseTrend(transactions, dashboard.monthKey),
+    [transactions, dashboard.monthKey],
+  );
+  const highestMonthlyExpense = Math.max(1, ...monthlyExpenseTrend.map((month) => month.expense));
   const monthLabel = formatMonthLabel(dashboard.monthKey);
 
   if (isLoading) {
@@ -161,11 +175,59 @@ export function OverviewDashboard() {
         ))}
       </section>
 
-      <section className="grid gap-4 lg:grid-cols-[1fr_1fr]">
+      <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
+        <article className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5">
+          <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+            <div>
+              <p className="text-sm font-bold text-[var(--primary)]">This month</p>
+              <h3 className="mt-2 text-lg font-bold">Monthly spending trend</h3>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <span className="rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-2 text-xs font-bold text-[var(--muted)]">
+                Last 6 months
+              </span>
+              <span className="rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-2 text-xs font-bold text-[var(--muted)]">
+                Expenses
+              </span>
+            </div>
+          </div>
+
+          <div
+            className="mt-5 flex min-h-64 items-end gap-3 rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 pb-9 pt-5"
+            role="img"
+            aria-label={`Monthly spending trend ending ${monthLabel}`}
+          >
+            {monthlyExpenseTrend.map((month) => {
+              const heightPercent =
+                month.expense > 0 ? Math.max((month.expense / highestMonthlyExpense) * 100, 12) : 4;
+
+              return (
+                <div
+                  key={month.monthKey}
+                  className="relative flex h-52 min-w-0 flex-1 flex-col items-center justify-end gap-2"
+                >
+                  <div
+                    className="relative w-full rounded-t-lg rounded-b-sm bg-gradient-to-t from-[var(--accent)] to-[var(--primary)]"
+                    style={{ height: `${heightPercent}%` }}
+                    title={`${formatMonthLabel(month.monthKey)}: ${formatInr(month.expense)}`}
+                  >
+                    <span className="sr-only">
+                      {formatMonthLabel(month.monthKey)} expense {formatInr(month.expense)}
+                    </span>
+                  </div>
+                  <span className="absolute bottom-[-1.75rem] text-xs font-bold text-[var(--muted)]">
+                    {formatShortMonthLabel(month.monthKey)}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </article>
+
         <article className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5">
           <div className="flex items-center justify-between gap-3">
             <h3 className="text-lg font-bold">Where your money went</h3>
-            <CalendarDays aria-hidden="true" size={19} className="text-[var(--muted)]" />
+            <ChartPie aria-hidden="true" size={19} className="text-[var(--muted)]" />
           </div>
 
           {dashboard.categorySpend.length === 0 ? (
@@ -195,12 +257,15 @@ export function OverviewDashboard() {
           )}
         </article>
 
-        <article className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5">
+        <article className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5 xl:col-span-2">
           <div className="flex items-center justify-between gap-3">
             <h3 className="text-lg font-bold">Recent transactions</h3>
-            <a href="/transactions" className="text-sm font-bold text-[var(--primary)]">
-              View all
-            </a>
+            <div className="flex items-center gap-3">
+              <BarChart3 aria-hidden="true" size={19} className="text-[var(--muted)]" />
+              <a href="/transactions" className="text-sm font-bold text-[var(--primary)]">
+                View all
+              </a>
+            </div>
           </div>
 
           <ul className="mt-4 divide-y divide-[var(--border)]">
@@ -271,9 +336,36 @@ function formatMonthLabel(monthKey: string) {
   }).format(new Date(`${monthKey}-01T00:00:00`));
 }
 
+function formatShortMonthLabel(monthKey: string) {
+  return new Intl.DateTimeFormat("en-IN", {
+    month: "short",
+  }).format(new Date(`${monthKey}-01T00:00:00`));
+}
+
 function formatTransactionDate(value: string) {
   return new Intl.DateTimeFormat("en-IN", {
     day: "numeric",
     month: "short",
   }).format(new Date(`${value}T00:00:00`));
+}
+
+function getMonthlyExpenseTrend(transactions: Transaction[], currentMonthKey: string, monthCount = 6) {
+  const currentMonth = new Date(`${currentMonthKey}-01T00:00:00`);
+
+  return Array.from({ length: monthCount }, (_, index) => {
+    const month = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - (monthCount - index - 1), 1);
+    const monthKey = getMonthKeyFromDate(month);
+    const expense = transactions
+      .filter((transaction) => transaction.type === "expense" && transaction.date.startsWith(monthKey))
+      .reduce((total, transaction) => total + transaction.amount, 0);
+
+    return { expense, monthKey };
+  });
+}
+
+function getMonthKeyFromDate(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+
+  return `${year}-${month}`;
 }
